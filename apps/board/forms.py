@@ -11,15 +11,12 @@ class BoardCreateForm(forms.ModelForm):
     """
 
     start_date = JalaliDateField(label="تاریخ شروع")
+    end_date = JalaliDateField(required=False, label="تاریخ پایان (اختیاری)")
 
     class Meta:
-        model = BoardMembership
-        fields = ["user", "position", "start_date", "reason"]
-        labels = {
-            "user": "کاربر",
-            "position": "سمت",
-            "reason": "دلیل (اختیاری)",
-        }
+        model = Board
+        fields = ["description", "start_date", "end_date"]
+        labels = {"description": "توضیحات"}
 
 
 class BoardMembershipCreateForm(forms.ModelForm):

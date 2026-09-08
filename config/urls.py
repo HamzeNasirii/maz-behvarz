@@ -21,6 +21,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from apps.accounts.forms import CaptchaAuthenticationForm
 from apps.authorization.admin_dashboard import pending_requests_view
 from apps.public_content.sitemaps import (
     AnnouncementSitemap,
@@ -45,6 +46,7 @@ urlpatterns = [
     path("admin/pending-requests/", pending_requests_view, name="pending_requests"),
     path("admin/reports/", include("apps.reports.urls")),
     path("admin/", admin.site.urls),
+    path("captcha/", include("captcha.urls")),
     path("health/", views.health_check_view, name="health_check"),
     path("api/organization/", include("apps.organization.urls")),
     path("api/v1/", include("apps.api.urls")),
@@ -53,8 +55,10 @@ urlpatterns = [
     path("news/feed/", LatestNewsFeed(), name="news_feed"),
     path("robots.txt", robots_txt_view, name="robots_txt"),
     path("", include("apps.accounts.urls")),
-    path("login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
-    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("login/", auth_views.LoginView.as_view(
+        template_name="registration/login.html",
+        authentication_form=CaptchaAuthenticationForm,
+    ), name="login"),    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 
     path(
         "password-reset/",

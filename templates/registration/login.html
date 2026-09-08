@@ -13,13 +13,44 @@
                 <label class="required" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
                 {{ form.password }}
             </div>
+            <div class="form-group">
+                <label class="required">{{ form.captcha.label }}</label>
+                <div style="display:flex; align-items:center; gap: var(--space-2);">
+                    <div id="captcha-image-wrapper">{{ form.captcha }}</div>
+{#                    <button type="button" id="captcha-refresh-btn" class="btn btn-secondary btn-sm">تولید تصویر جدید#}
+{#                    </button>#}
+                </div>
+                {% if form.captcha.errors %}<span class="form-error-text">{{ form.captcha.errors.0 }}</span>{% endif %}
+            </div>
             <button type="submit" class="btn btn-primary">ورود</button>
         </form>
-        {% if form.errors %}
-            <p class="form-error-text">نام کاربری یا رمز عبور اشتباه است.</p>
+        {% if form.non_field_errors %}
+            <p class="form-error-text">{{ form.non_field_errors.0 }}</p>
         {% endif %}
         <p style="text-align:center; margin-top: var(--space-4);">
             <a href="{% url 'accounts:bale_reset_request' %}">رمز عبور خود را فراموش کرده‌اید؟</a>
         </p>
     </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        (function () {
+            var refreshBtn = document.getElementById("captcha-refresh-btn");
+            if (!refreshBtn) return;
+
+            refreshBtn.addEventListener("click", function () {
+                fetch("/captcha/refresh/")
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        var img = document.querySelector("#captcha-image-wrapper img");
+                        var hiddenInput = document.querySelector('input[name="captcha_0"]');
+                        if (img) img.src = data.image_url;
+                        if (hiddenInput) hiddenInput.value = data.key;
+                    });
+            });
+        })();
+    </script>
 {% endblock %}

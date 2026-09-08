@@ -15,3 +15,18 @@ class BaleResetVerifyForm(forms.Form):
         if cleaned_data.get("new_password1") != cleaned_data.get("new_password2"):
             raise forms.ValidationError("رمز عبور جدید و تکرار آن یکسان نیستند.")
         return cleaned_data
+
+
+from captcha.fields import CaptchaField
+from django.contrib.auth.forms import AuthenticationForm
+
+
+class CaptchaAuthenticationForm(AuthenticationForm):
+    captcha = CaptchaField(label="کد امنیتی")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].label = "نام کاربری"
+        self.fields["password"].label = "رمز عبور"
+
+

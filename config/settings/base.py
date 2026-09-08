@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "apps.requests",
     "apps.forums",
+    "captcha",
 ]
 
 MIDDLEWARE = [
@@ -184,3 +185,16 @@ BALE_BOT_USERNAME = config("BALE_BOT_USERNAME", default="")  # فقط یوزرن
 BALE_PROVIDER_TOKEN = config("BALE_PROVIDER_TOKEN", default="")
 
 STATIC_VERSION = config("STATIC_VERSION", default="1")
+
+
+CAPTCHA_IMAGE_SIZE = (200, 80)
+CAPTCHA_FONT_SIZE = 42
+CAPTCHA_FOREGROUND_COLOR = "#0052cc"
+CAPTCHA_BACKGROUND_COLOR = "#f5f5f5"
+CAPTCHA_NOISE_FUNCTIONS = ("captcha.helpers.noise_dots",)
+CAPTCHA_FILTER_FUNCTIONS = (
+    "captcha.helpers.post_smooth",
+)
+CAPTCHA_LENGTH = 5
+CAPTCHA_TIMEOUT = 5  # دقیقه، قبل از انقضا
+
