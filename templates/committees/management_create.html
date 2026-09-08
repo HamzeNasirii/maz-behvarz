@@ -1,0 +1,19 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>ایجاد کمیته جدید</h1>
+<div class="card">
+    {% include "components/form_errors.html" %}
+    <form method="post" class="board-create-form">
+        {% csrf_token %}
+        {% for field in form %}
+            <div style="margin-bottom: var(--space-4);">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<p style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: var(--space-1);">{{ field.help_text }}</p>{% endif %}
+                {% if field.errors %}<span class="form-error-text">{{ field.errors.0 }}</span>{% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">ایجاد کمیته</button>
+    </form>
+</div>
+{% endblock %}

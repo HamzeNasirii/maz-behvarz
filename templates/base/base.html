@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        // تعیین حالت روز/شب پیش از رندر صفحه تا از چشمک‌زدن (FOUC) جلوگیری شود
+        (function () {
+            try {
+                var stored = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = stored || (prefersDark ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+            }
+        })();
+    </script>
+    <title>{% block title %}انجمن صنفی بهورزان استان مازندران{% endblock %}</title>
+    <meta name="description"
+          content="{% block meta_description %}انجمن صنفی بهورزان استان مازندران — اخبار، اطلاعیه‌ها، اسناد و اطلاعات عمومی انجمن{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <meta property="og:title" content="{% block og_title %}انجمن صنفی بهورزان استان مازندران{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}انجمن صنفی بهورزان استان مازندران{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+
+    <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}?v={{ STATIC_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tables.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<a href="#main-content" class="skip-link">رفتن به محتوای اصلی</a>
+{% block body %}{% endblock %}
+<script src="{% static 'js/navigation.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

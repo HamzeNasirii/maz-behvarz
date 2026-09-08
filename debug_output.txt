@@ -1,0 +1,204 @@
+from django import forms
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect, render
+
+from apps.board.permissions import is_board_member
+
+from .management_registry import CONTENT_TYPES
+from .management_forms import FORM_OVERRIDES
+from . import models as m
+
+def _require_access(user):
+    if not (user.is_staff or user.is_superuser or is_board_member(user)):
+        raise PermissionDenied("شما مجوز مدیریت محتوای عمومی سایت را ندارید.")
+
+
+def _get_config(content_type):
+    config = CONTENT_TYPES.get(content_type)
+    if config is None:
+        raise PermissionDenied("نوع محتوای انتخاب‌شده نامعتبر است.")
+    return config
+
+
+def _build_form_class(content_type, model):
+    """
+    اگر برای این content_type یک فرم اختصاصی (مثلاً برای مدیریت Slug
+    خودکار) تعریف شده باشد، همان استفاده می‌شود؛ در غیر این صورت،
+    فرم عمومی (بدون دانستن دقیق نام تک‌تک فیلدها) ساخته می‌شود.
+    """
+    if content_type in FORM_OVERRIDES:
+        return FORM_OVERRIDES[content_type]
+    return forms.modelform_factory(
+        model, fields="__all__",
+        exclude=["created_by", "created_at", "updated_at", "published_at", "archived_at"],
+    )
+
+
+@login_required
+def hub_view(request):
+    _require_access(request.user)
+    cards = [
+        {
+            "key": key, "label": config["label"],
+            "count": config["model"].objects.count(),
+            "can_create": config["can_create"],
+        }
+        for key, config in CONTENT_TYPES.items()
+    ]
+    return render(request, "public_content/management_hub.html", {"cards": cards})
+
+
+@login_required
+def list_view(request, content_type):
+    _require_access(request.user)
+    config = _get_config(content_type)
+    items = config["model"].objects.all().order_by("-pk")
+    return render(request, "public_content/management_list.html", {
+        "items": items, "label": config["label"], "content_type": content_type,
+        "can_create": config["can_create"],
+    })
+
+
+@login_required
+def create_view(request, content_type):
+    _require_access(request.user)
+    config = _get_config(content_type)
+    if not config["can_create"]:
+        raise PermissionDenied("ایجاد این نوع محتوا مجاز نیست.")
+    form_class = _build_form_class(content_type, config["model"])
+
+    if request.method == "POST":
+        form = form_class(request.POST, request.FILES)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            if hasattr(instance, "created_by_id") and not instance.created_by_id:
+                instance.created_by = request.user
+            if hasattr(instance, "author_id") and not instance.author_id:
+                instance.author = request.user
+            instance.save()
+            form.save_m2m()
+            messages.success(request, f"{config['label']} با موفقیت ایجاد شد.")
+            return redirect("public_content_mgmt:list", content_type=content_type)
+    else:
+        form = form_class()
+
+    return render(request, "public_content/management_form.html", {
+        "form": form, "label": config["label"], "mode": "create", "content_type": content_type,
+    })
+
+
+@login_required
+def edit_view(request, content_type, pk):
+    _require_access(request.user)
+    config = _get_config(content_type)
+    instance = get_object_or_404(config["model"], pk=pk)
+    form_class = _build_form_class(content_type, config["model"])
+
+    if request.method == "POST":
+        form = form_class(request.POST, request.FILES, instance=instance)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"{config['label']} با موفقیت ویرایش شد.")
+            return redirect("public_content_mgmt:list", content_type=content_type)
+    else:
+        form = form_class(instance=instance)
+
+    return render(request, "public_content/management_form.html", {
+                "form": form, "label": config["label"], "mode": "edit", "content_type": content_type,
+    })
+
+
+@login_required
+def delete_view(request, content_type, pk):
+    _require_access(request.user)
+    config = _get_config(content_type)
+    instance = get_object_or_404(config["model"], pk=pk)
+    if request.method == "POST":
+        instance.delete()
+        messages.success(request, f"{config['label']} حذف شد.")
+    return redirect("public_content_mgmt:list", content_type=content_type)
+
+@login_required
+def quick_category_create_view(request, content_type):
+    """
+    ایجاد سریع یک دسته‌بندی مرتبط، بدون ترک صفحه‌ی افزودن محتوا —
+    فقط برای content_typeهایی که یک دسته‌بندی متناظر دارند.
+    """
+    from django.http import JsonResponse
+
+    _require_access(request.user)
+
+    category_map = {
+        "news": m.NewsCategory,
+        "public_document": m.DocumentCategory,
+        "faq": m.FAQCategory,
+    }
+    category_model = category_map.get(content_type)
+    if category_model is None:
+        return JsonResponse({"error": "این نوع محتوا دسته‌بندی ندارد."}, status=400)
+
+    name = request.POST.get("name", "").strip()
+    if not name:
+        return JsonResponse({"error": "نام دسته‌بندی الزامی است."}, status=400)
+
+    category, created = category_model.objects.get_or_create(name=name)
+    return JsonResponse({"id": category.pk, "name": category.name, "created": created})
+
+@login_required
+def tag_suggestions_view(request):
+    from django.http import JsonResponse
+
+    _require_access(request.user)
+    query = request.GET.get("q", "").strip()
+    if len(query) < 1:
+        return JsonResponse({"results": []})
+
+    tags = m.Tag.objects.filter(name__icontains=query).order_by("name")[:10]
+    return JsonResponse({"results": [t.name for t in tags]})
+
+
+@login_required
+def news_gallery_view(request, pk):
+    _require_access(request.user)
+    article = get_object_or_404(m.NewsArticle, pk=pk)
+
+    if request.method == "POST":
+        files = request.FILES.getlist("images")
+        for f in files:
+            m.NewsImage.objects.create(news_article=article, image=f)
+        if files:
+            messages.success(request, f"{len(files)} تصویر با موفقیت اضافه شد.")
+        return redirect("public_content_mgmt:news_gallery", pk=pk)
+
+    images = article.gallery_images.all()
+    return render(request, "public_content/news_gallery.html", {"article": article, "images": images})
+
+
+@login_required
+def news_gallery_delete_view(request, pk, image_pk):
+    _require_access(request.user)
+    image = get_object_or_404(m.NewsImage, pk=image_pk, news_article_id=pk)
+    if request.method == "POST":
+        image.delete()
+        messages.success(request, "تصویر حذف شد.")
+    return redirect("public_content_mgmt:news_gallery", pk=pk)from django.urls import path
+
+from . import management_views as views
+
+app_name = "public_content_mgmt"
+
+urlpatterns = [
+    path("management/content/", views.hub_view, name="hub"),
+    path("management/content/<str:content_type>/", views.list_view, name="list"),
+    path("management/content/<str:content_type>/create/", views.create_view, name="create"),
+    path("management/content/<str:content_type>/quick-category/", views.quick_category_create_view,
+         name="quick_category_create"),
+    path("management/content/tags/suggestions/", views.tag_suggestions_view, name="tag_suggestions"),
+    path("management/content/news/<int:pk>/gallery/", views.news_gallery_view, name="news_gallery"),
+    path("management/content/news/<int:pk>/gallery/<int:image_pk>/delete/", views.news_gallery_delete_view,
+         name="news_gallery_delete"),
+    path("management/content/<str:content_type>/<int:pk>/edit/", views.edit_view, name="edit"),
+    path("management/content/<str:content_type>/<int:pk>/delete/", views.delete_view, name="delete"),
+]

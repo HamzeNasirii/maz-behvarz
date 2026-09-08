@@ -1,0 +1,98 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/document-upload.css' %}">
+{% endblock %}
+{% block content %}
+    <h1>{{ request_obj.title }}</h1>
+    <div class="card">
+        <p>نوع: {{ request_obj.get_request_type_display }}</p>
+        <p>وضعیت: <span
+                class="badge badge-{% if request_obj.status == "completed" %}active{% else %}inactive{% endif %}">{{ request_obj.get_status_display }}</span>
+        </p>
+        <p>{{ request_obj.description|linebreaks }}</p>
+
+        <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+            {% if request_obj.status == "draft" %}
+                <form method="post" action="{% url 'requests_portal:submit' pk=request_obj.pk %}">{% csrf_token %}
+                    <button class="btn btn-primary" type="submit">ارسال درخواست</button>
+                </form>
+                <a href="{% url 'requests_portal:cancel' pk=request_obj.pk %}" class="btn btn-danger">لغو</a>
+            {% endif %}
+            {% if request_obj.status == "submitted" or request_obj.status == "under_review" %}
+                <a href="{% url 'requests_portal:cancel' pk=request_obj.pk %}" class="btn btn-danger">لغو درخواست</a>
+            {% endif %}
+            {% if request_obj.status == "rejected" or request_obj.status == "returned" %}
+                <form method="post" action="{% url 'requests_portal:resubmit' pk=request_obj.pk %}">{% csrf_token %}
+                    <button class="btn btn-primary" type="submit">ارسال مجدد</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">اسناد پیوست</h2>
+        {% for doc in attachments %}
+            <p><a href="{% url 'documents_mgmt:download' pk=doc.pk %}">{{ doc.title }}</a></p>
+        {% empty %}
+            {% include "components/empty_state.html" with empty_message="سندی پیوست نشده است." %}
+        {% endfor %}
+
+        <form method="post" action="{% url 'requests_portal:attach_document' pk=request_obj.pk %}"
+              enctype="multipart/form-data"
+              style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border);">
+            {% csrf_token %}
+            <label class="content-form-field__label">افزودن سند پیوست جدید</label>
+            <div class="custom-file-picker">
+                <button type="button" class="btn btn-secondary custom-file-picker__btn" data-target="attach-doc-input">
+                    انتخاب فایل
+                </button>
+                <span class="custom-file-picker__filename" id="attach-doc-filename">فایلی انتخاب نشده است</span>
+                <input type="file" name="file" id="attach-doc-input" class="file-input-hidden" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-3);">آپلود</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">تاریخچه</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>از</th>
+                    <th>به</th>
+                    <th>تاریخ</th>
+                    <th>دلیل</th>
+                </tr>
+                {% for h in history %}
+                    <tr>
+                        <td>{{ h.get_from_status_display }}</td>
+                        <td>{{ h.get_to_status_display }}</td>
+                        <td>{{ h.changed_at|jalali }} — {{ h.changed_at|date:"H:i" }}</td>
+                        <td>{{ h.reason|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        (function () {
+            var input = document.getElementById("attach-doc-input");
+            var filenameSpan = document.getElementById("attach-doc-filename");
+            var btn = document.querySelector('[data-target="attach-doc-input"]');
+            btn.addEventListener("click", function () {
+                input.click();
+            });
+            input.addEventListener("change", function () {
+                if (input.files.length) filenameSpan.textContent = input.files[0].name;
+            });
+        })();
+    </script>
+{% endblock %}

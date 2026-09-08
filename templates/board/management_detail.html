@@ -1,0 +1,154 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+
+    <h1>{{ board.name }}</h1>
+    <div class="card">
+        <p>وضعیت: <span
+                class="badge badge-{% if board.status == "active" %}active{% else %}inactive{% endif %}">{{ board.get_status_display }}</span>
+        </p>
+        <p>از {{ board.start_date|jalali }} تا {{ board.end_date|jalali|default:"تاکنون" }}</p>
+        <p>{{ board.description|default:"—" }}</p>
+
+        <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+            {% if board.status == "draft" %}
+                <form method="post" action="{% url 'board_mgmt:activate' pk=board.pk %}">{% csrf_token %}
+                    <button class="btn btn-primary" type="submit">فعال‌سازی</button>
+                </form>
+            {% endif %}
+            {% if board.status == "active" %}
+                <a href="{% url 'board_mgmt:suspend' pk=board.pk %}" class="btn btn-secondary">تعلیق</a>
+                <form method="post" action="{% url 'board_mgmt:end' pk=board.pk %}">{% csrf_token %}
+                    <button class="btn btn-secondary" type="submit">پایان‌دادن</button>
+                </form>
+            {% endif %}
+            {% if board.status == "suspended" %}
+                <form method="post" action="{% url 'board_mgmt:activate' pk=board.pk %}">{% csrf_token %}
+                    <button class="btn btn-primary" type="submit">فعال‌سازی مجدد</button>
+                </form>
+                <form method="post" action="{% url 'board_mgmt:end' pk=board.pk %}">{% csrf_token %}
+                    <button class="btn btn-secondary" type="submit">پایان‌دادن</button>
+                </form>
+            {% endif %}
+            {% if board.status == "ended" %}
+                <form method="post" action="{% url 'board_mgmt:archive' pk=board.pk %}">{% csrf_token %}
+                    <button class="btn btn-danger" type="submit">بایگانی</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">اعضا</h2>
+        <button type="button" class="btn btn-secondary" id="toggle-add-member-btn">+ افزودن عضو</button>
+
+        <div id="add-member-form-wrapper" style="max-height:0; overflow:hidden; transition: max-height 0.3s ease;">
+            <div class="card" style="background: var(--color-bg); margin-top: var(--space-4);">
+                {% include "components/form_errors.html" %}
+                <form method="post" action="{% url 'board_mgmt:member_add' pk=board.pk %}" class="board-create-form">
+                    {% csrf_token %}
+                    <div style="display:flex; gap: var(--space-3); flex-wrap:wrap; align-items:flex-end;">
+                        <div style="flex:2; min-width:220px; position:relative;">
+                            <label for="board-user-search-input">جستجوی کاربر</label>
+                            <input type="text" id="board-user-search-input" placeholder="نام یا کد ملی را تایپ کنید..."
+                                   autocomplete="off">
+                            <div id="board-user-search-suggestions" class="org-search-suggestions"
+                                 style="display:none;"></div>
+                            <div id="board-user-selected"
+                                 style="margin-top: var(--space-1); font-size: var(--font-size-sm); color: var(--color-success);"></div>
+                            {{ add_member_form.user }}
+                        </div>
+                        <div style="flex:1; min-width:140px;">
+                            <label for="{{ add_member_form.position.id_for_label }}">{{ add_member_form.position.label }}</label>
+                            {{ add_member_form.position }}
+                        </div>
+                        <div style="flex:1; min-width:140px;">
+                            <label for="{{ add_member_form.start_date.id_for_label }}">{{ add_member_form.start_date.label }}</label>
+                            {{ add_member_form.start_date }}
+                        </div>
+                        <div style="flex:2; min-width:200px;">
+                            <label for="{{ add_member_form.reason.id_for_label }}">{{ add_member_form.reason.label }}</label>
+                            {{ add_member_form.reason }}
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary">افزودن عضو</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="table-wrapper" style="margin-top: var(--space-4);">
+            <table class="data-table">
+                <tr>
+                    <th>کاربر</th>
+                    <th>سمت</th>
+                    <th>از تاریخ</th>
+                    <th></th>
+                </tr>
+                {% for m in members %}
+                    <tr>
+                        <td>{{ m.user.get_full_name|default:m.user.username }}</td>
+                        <td>{{ m.get_position_display }}</td>
+                        <td>{{ m.start_date|jalali }}</td>
+                        <td><a href="{% url 'board_mgmt:member_remove' membership_pk=m.pk %}">حذف</a></td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">{% include "components/empty_state.html" with empty_message="عضوی ثبت نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">تاریخچه‌ی وضعیت</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>از</th>
+                    <th>به</th>
+                    <th>عامل</th>
+                    <th>تاریخ</th>
+                    <th>دلیل</th>
+                </tr>
+                {% for h in history %}
+                    <tr>
+                        <td>{{ h.get_previous_status_display }}</td>
+                        <td>{{ h.get_new_status_display }}</td>
+                        <td>{{ h.actor.get_full_name|default:h.actor.username }}</td>
+                        <td>{{ h.created_at|jalali }}</td>
+                        <td>{{ h.reason|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        (function () {
+            var toggleBtn = document.getElementById("toggle-add-member-btn");
+            var wrapper = document.getElementById("add-member-form-wrapper");
+            if (!toggleBtn || !wrapper) return;
+
+            var isOpen = false;
+            toggleBtn.addEventListener("click", function () {
+                isOpen = !isOpen;
+                wrapper.style.maxHeight = isOpen ? wrapper.scrollHeight + "px" : "0";
+                toggleBtn.textContent = isOpen ? "− بستن فرم" : "+ افزودن عضو";
+            });
+
+            {% if add_member_form.errors %}
+                isOpen = true;
+                wrapper.style.maxHeight = wrapper.scrollHeight + "px";
+                toggleBtn.textContent = "− بستن فرم";
+            {% endif %}
+        })();
+    </script>
+{% endblock %}

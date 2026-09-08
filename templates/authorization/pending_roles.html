@@ -1,0 +1,35 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>تخصیص‌های نقش در انتظار تأیید</h1>
+<div class="table-wrapper">
+    <table class="data-table">
+        <tr><th>کاربر</th><th>نقش</th><th>محدوده</th><th>عملیات</th></tr>
+        {% for a in assignments %}
+        <tr>
+            <td>{{ a.user.get_full_name|default:a.user.username }}</td>
+            <td>{{ a.role.name }}</td>
+            <td>{{ a.access_scope }}</td>
+            <td class="data-table__actions">
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_id" value="{{ a.pk }}">
+                    <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">تأیید</button>
+                </form>
+                <button type="button" class="btn btn-danger btn-sm" onclick="document.getElementById('reject-{{ a.pk }}').style.display='block'">رد</button>
+                <div id="reject-{{ a.pk }}" style="display:none; margin-top: var(--space-2);">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="item_id" value="{{ a.pk }}">
+                        <input type="hidden" name="action" value="reject">
+                        {{ reject_form.reason }}
+                        <button type="submit" class="btn btn-danger btn-sm">تأیید رد</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">{% include "components/empty_state.html" with empty_message="تخصیص نقشی در انتظار تأیید نیست." %}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

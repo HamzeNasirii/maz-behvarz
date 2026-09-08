@@ -1,0 +1,92 @@
+:root {
+    /* رنگ‌ها — بر پایه‌ی main.css موجود پروژه، نه حدسی */
+    --color-primary: #14532d;
+    --color-primary-light: #1e7a42;
+    --color-primary-dark: #0d3a1f;
+    --color-secondary: #6b7280;
+    --color-success: #15803d;
+    --color-success-bg: #dcfce7;
+    --color-danger: #f5a623;
+    --color-danger-bg: #fee2e2;
+    --color-warning: #b45309;
+    --color-warning-bg: #fef3c7;
+    --color-info: #1d4ed8;
+    --color-info-bg: #dbeafe;
+
+    --color-highlight-bg: #f0f4f1;
+    --color-highlight-text: var(--color-text);
+
+    --color-bg: #f7f8fa;
+    --color-surface: #ffffff;
+    --color-border: #e2e2e2;
+    --color-text: #222222;
+    --color-text-muted: #6b7280;
+    --color-link: var(--color-primary);
+
+    /* تایپوگرافی */
+    --font-family: 'Vazirmatn', Tahoma, "Segoe UI", sans-serif;
+    --font-size-sm: 0.85rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.15rem;
+    --font-size-xl: 1.5rem;
+    --font-size-xxl: 2rem;
+
+    /* فاصله‌گذاری (بر پایه‌ی ۴px) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+
+    /* شعاع گوشه */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* سایه */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    /* عرض Sidebar (برای Dashboard Layout) */
+    --sidebar-width: 240px;
+}
+
+/* ---------- حالت شب (Dark Theme) ----------
+   با data-theme="dark" روی <html> فعال می‌شود (به‌صورت دستی از دکمه‌ی تغییر حالت،
+   یا خودکار بر اساس ترجیح سیستم‌عامل کاربر — به fonts/navigation.js مراجعه شود) */
+:root[data-theme="dark"] {
+    --color-primary-light: #22c55e;
+    --color-link: #4ade80;
+    --color-primary-dark: #86efac; /* ← این خط جدید را اضافه کنید: رنگ هدینگ‌ها در حالت شب */
+
+    /*--color-highlight-bg: #f0f4f1;*/
+    /*--color-highlight-text: var(--color-text);*/
+
+    --color-highlight-bg: #1e2b23;
+    --color-highlight-text: #e5e7eb;
+
+    --color-secondary: #9ca3af;
+    --color-success: #4ade80;
+    --color-success-bg: rgba(21, 128, 61, 0.28);
+    --color-danger: #ff0000;
+    --color-danger-bg: rgba(185, 28, 28, 0.28);
+    --color-warning: #fbbf24;
+    --color-warning-bg: rgba(180, 83, 9, 0.28);
+    --color-info: #60a5fa;
+    --color-info-bg: rgba(29, 78, 216, 0.28);
+
+    --color-bg: #101713;
+    --color-surface: #1a2420;
+    --color-border: #2c3830;
+    --color-text: #e6e8e6;
+    --color-text-muted: #9aa79f;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+/* توجه: تشخیص خودکار ترجیح سیستم (prefers-color-scheme) در همان اسکریپت ابتدای
+   base/base.html انجام می‌شود (پیش از رندر، برای جلوگیری از FOUC) و همیشه
+   data-theme را صریحاً light یا dark تنظیم می‌کند؛ بنابراین نیازی به تکرار این
+   منطق با یک Media Query جداگانه در CSS نیست. */

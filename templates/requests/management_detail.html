@@ -1,0 +1,53 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>{{ request_obj.title }}</h1>
+<div class="card">
+    <p>ثبت‌کننده: {{ request_obj.requester.get_full_name|default:request_obj.requester.username }}</p>
+    <p>نوع: {{ request_obj.get_request_type_display }}</p>
+    <p>وضعیت: <span class="badge badge-{% if request_obj.status == "completed" %}active{% else %}inactive{% endif %}">{{ request_obj.get_status_display }}</span></p>
+    <p>{{ request_obj.description|linebreaks }}</p>
+
+    <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+        {% if request_obj.status == "submitted" or request_obj.status == "resubmitted" %}
+            <form method="post" action="{% url 'requests_mgmt:review' pk=request_obj.pk %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">شروع بررسی</button></form>
+        {% endif %}
+        {% if request_obj.status == "under_review" %}
+            <form method="post" action="{% url 'requests_mgmt:approve' pk=request_obj.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">تأیید</button></form>
+            <a href="{% url 'requests_mgmt:reject' pk=request_obj.pk %}" class="btn btn-danger">رد</a>
+            <a href="{% url 'requests_mgmt:return' pk=request_obj.pk %}" class="btn btn-secondary">بازگشت برای اصلاح</a>
+        {% endif %}
+        {% if request_obj.status == "approved" %}
+            <form method="post" action="{% url 'requests_mgmt:complete' pk=request_obj.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">تکمیل</button></form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">اسناد پیوست</h2>
+    {% for doc in attachments %}
+        <p><a href="{% url 'documents_mgmt:download' pk=doc.pk %}">{{ doc.title }}</a></p>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="سندی پیوست نشده است." %}
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2 class="card__title">تاریخچه</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>از</th><th>به</th><th>عامل</th><th>تاریخ</th><th>دلیل</th></tr>
+            {% for h in history %}
+            <tr>
+                <td>{{ h.from_status }}</td>
+                <td>{{ h.to_status }}</td>
+                <td>{{ h.changed_by.get_full_name|default:h.changed_by.username }}</td>
+                <td>{{ h.changed_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ h.reason|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

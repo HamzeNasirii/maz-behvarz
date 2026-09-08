@@ -1,0 +1,40 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>صف‌های کاری درخواست‌ها</h1>
+
+<div class="card">
+    <h2 class="card__title">در انتظار بررسی</h2>
+    {% for r in pending %}
+        <p><a href="{% url 'requests_mgmt:detail' pk=r.pk %}">{{ r.title }}</a> — {{ r.get_status_display }}</p>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="موردی در انتظار بررسی نیست." %}
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2 class="card__title">اخیراً بازگشت‌داده‌شده</h2>
+    {% for r in returned %}
+        <p><a href="{% url 'requests_mgmt:detail' pk=r.pk %}">{{ r.title }}</a></p>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="موردی وجود ندارد." %}
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2 class="card__title">اخیراً ردشده</h2>
+    {% for r in rejected %}
+        <p><a href="{% url 'requests_mgmt:detail' pk=r.pk %}">{{ r.title }}</a></p>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="موردی وجود ندارد." %}
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2 class="card__title">اخیراً تکمیل‌شده</h2>
+    {% for r in completed %}
+        <p><a href="{% url 'requests_mgmt:detail' pk=r.pk %}">{{ r.title }}</a></p>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="موردی وجود ندارد." %}
+    {% endfor %}
+</div>
+{% endblock %}

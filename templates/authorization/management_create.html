@@ -1,0 +1,12 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>پیشنهاد تخصیص نقش جدید</h1>
+<div class="card">
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">ثبت پیشنهاد</button>
+    </form>
+</div>
+{% endblock %}

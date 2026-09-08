@@ -1,0 +1,12 @@
+{% extends "base/base.html" %}
+{% block body %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--space-4);">
+    <div style="width: 100%; max-width: 420px;">
+        <p style="margin-bottom: var(--space-4);">
+            <a href="{% url 'website:home' %}">→ بازگشت به صفحه‌ی اصلی</a>
+        </p>
+        {% include "components/alerts.html" %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

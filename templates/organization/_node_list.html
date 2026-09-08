@@ -1,0 +1,34 @@
+<ul class="org-tree__list">
+{% for item in items %}
+    <li class="org-tree__item" data-level="{{ item.level }}" data-pk="{{ item.pk }}" data-expanded="false">
+        <div class="org-tree__row">
+            {% if item.has_children %}
+                <button type="button" class="org-tree__toggle" data-tree-toggle aria-expanded="false" aria-label="باز کردن {{ item.name }}">+</button>
+            {% else %}
+                <span class="org-tree__toggle org-tree__toggle--leaf">•</span>
+            {% endif %}
+
+            <span class="org-tree__status-dot {% if item.is_active %}is-active{% else %}is-inactive{% endif %}"
+                  title="{% if item.is_active %}فعال{% else %}غیرفعال{% endif %}"></span>
+
+            <span class="org-tree__name">{{ item.name }}</span>
+
+            <span class="org-tree__actions">
+                <a href="{% url 'org_mgmt:edit' level=item.level pk=item.pk %}" class="btn btn-warning btn-sm">ویرایش</a>
+                <form method="post" action="{% url 'org_mgmt:toggle' level=item.level pk=item.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if item.is_active %}btn-danger{% else %}btn-success{% endif %}">
+                        {% if item.is_active %}غیرفعال کن{% else %}فعال کن{% endif %}
+                    </button>
+                </form>
+                {% if item.next_level %}
+                    <a href="{% url 'org_mgmt:create' level=item.next_level %}?parent={{ item.pk }}" class="btn btn-primary btn-sm">+ {{ item.next_label }}</a>
+                {% endif %}
+            </span>
+        </div>
+        <div class="org-tree__children" data-tree-children></div>
+    </li>
+{% empty %}
+    <li class="org-tree__empty">موردی ثبت نشده است.</li>
+{% endfor %}
+</ul>

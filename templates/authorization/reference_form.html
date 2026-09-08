@@ -1,0 +1,77 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="card">
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">ذخیره</button>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+    var provinceSelect = document.getElementById("id_province");
+    var countySelect = document.getElementById("id_county");
+    var networkSelect = document.getElementById("id_network");
+    var centerSelect = document.getElementById("id_center");
+    var houseSelect = document.getElementById("id_house");
+
+    // این فرم فقط برای صفحه‌ی AccessScope وجود دارد؛ اگر این فیلدها
+    // در صفحه‌ی دیگری (Role/Permission) نبودند، هیچ کاری نکن.
+    if (!provinceSelect || !countySelect || !networkSelect || !centerSelect || !houseSelect) {
+        return;
+    }
+
+    function populateSelect(select, items, placeholder) {
+        select.innerHTML = "";
+        var emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = placeholder;
+        select.appendChild(emptyOption);
+        items.forEach(function (item) {
+            var option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.name;
+            select.appendChild(option);
+        });
+    }
+
+    provinceSelect.addEventListener("change", function () {
+        populateSelect(networkSelect, [], "ابتدا شهرستان را انتخاب کنید");
+        populateSelect(centerSelect, [], "ابتدا شبکه را انتخاب کنید");
+        populateSelect(houseSelect, [], "ابتدا مرکز را انتخاب کنید");
+        if (!provinceSelect.value) { populateSelect(countySelect, [], "ابتدا استان را انتخاب کنید"); return; }
+        fetch("/api/organization/counties/?province=" + provinceSelect.value)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { populateSelect(countySelect, data.results, "شهرستان را انتخاب کنید"); });
+    });
+
+    countySelect.addEventListener("change", function () {
+        populateSelect(centerSelect, [], "ابتدا شبکه را انتخاب کنید");
+        populateSelect(houseSelect, [], "ابتدا مرکز را انتخاب کنید");
+        if (!countySelect.value) { return; }
+        fetch("/api/organization/networks/?county=" + countySelect.value)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { populateSelect(networkSelect, data.results, "شبکه را انتخاب کنید"); });
+    });
+
+    networkSelect.addEventListener("change", function () {
+        populateSelect(houseSelect, [], "ابتدا مرکز را انتخاب کنید");
+        if (!networkSelect.value) { return; }
+        fetch("/api/organization/centers/?network=" + networkSelect.value)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { populateSelect(centerSelect, data.results, "مرکز را انتخاب کنید"); });
+    });
+
+    centerSelect.addEventListener("change", function () {
+        if (!centerSelect.value) { return; }
+        fetch("/api/organization/houses/?center=" + centerSelect.value)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { populateSelect(houseSelect, data.results, "خانه بهداشت را انتخاب کنید"); });
+    });
+})();
+</script>
+{% endblock %}

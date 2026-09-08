@@ -1,0 +1,30 @@
+{% load static %}
+<nav class="site-nav">
+    <a href="{% url 'website:home' %}" class="site-nav__brand">انجمن صنفی بهورزان مازندران</a>
+    <div class="site-nav__links" data-nav-links>
+        <a href="{% url 'website:home' %}">خانه</a>
+        <a href="{% url 'website:about' %}">درباره‌ی انجمن</a>
+        <a href="{% url 'website:contact' %}">تماس با ما</a>
+        {% if not user.is_staff and not is_approved_member %}
+            <a href="{% url 'website:membership_application' %}">درخواست عضویت</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+            <a href="{% url 'members_portal:dashboard' %}">پنل عضویت</a>
+            {% if user.is_staff %}
+                <a href="/admin/pending-requests/">درخواست‌های در انتظار</a>
+                <a href="/admin/reports/">گزارش‌ها و آمار</a>
+            {% endif %}
+            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-link">خروج</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">ورود</a>
+        {% endif %}
+    </div>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="تغییر حالت روز/شب" aria-pressed="false">
+        <span data-theme-icon aria-hidden="true">🌙</span>
+    </button>
+    <button type="button" class="site-nav__toggle" data-nav-toggle aria-expanded="false" aria-label="باز کردن منو">☰
+    </button>
+</nav>

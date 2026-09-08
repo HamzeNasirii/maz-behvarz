@@ -1,0 +1,65 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+<h1>{{ committee.name }}</h1>
+<div class="card">
+    <p>وضعیت: <span class="badge badge-{% if committee.is_active %}active{% else %}inactive{% endif %}">{{ committee.get_status_display }}</span></p>
+    <p>هدف: {{ committee.purpose|default:"—" }}</p>
+
+    <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+        {% if committee.status == "draft" %}
+            <form method="post" action="{% url 'committees_mgmt:activate' pk=committee.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">فعال‌سازی</button></form>
+        {% endif %}
+        {% if committee.status == "active" %}
+            <a href="{% url 'committees_mgmt:suspend' pk=committee.pk %}" class="btn btn-secondary">تعلیق</a>
+            <form method="post" action="{% url 'committees_mgmt:end' pk=committee.pk %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">پایان‌دادن</button></form>
+        {% endif %}
+        {% if committee.status == "suspended" %}
+            <form method="post" action="{% url 'committees_mgmt:activate' pk=committee.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">فعال‌سازی مجدد</button></form>
+            <form method="post" action="{% url 'committees_mgmt:end' pk=committee.pk %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">پایان‌دادن</button></form>
+        {% endif %}
+        {% if committee.status == "ended" %}
+            <form method="post" action="{% url 'committees_mgmt:archive' pk=committee.pk %}">{% csrf_token %}<button class="btn btn-danger" type="submit">بایگانی</button></form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">اعضا</h2>
+    <a href="{% url 'committees_mgmt:member_add' pk=committee.pk %}" class="btn btn-secondary">افزودن عضو</a>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>کاربر</th><th>از تاریخ</th><th></th></tr>
+            {% for m in members %}
+            <tr>
+                <td>{{ m.user.get_full_name|default:m.user.username }}</td>
+                <td>{{ m.start_date|jalali }}</td>
+                <td><a href="{% url 'committees_mgmt:member_remove' membership_pk=m.pk %}">حذف</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">{% include "components/empty_state.html" with empty_message="عضوی ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">تاریخچه‌ی وضعیت</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>از</th><th>به</th><th>عامل</th><th>تاریخ</th><th>دلیل</th></tr>
+            {% for h in history %}
+            <tr>
+                <td>{{ h.get_previous_status_display }}</td>
+                <td>{{ h.get_new_status_display }}</td>
+                <td>{{ h.actor.get_full_name|default:h.actor.username }}</td>
+                <td>{{ h.created_at|jalali }}</td>
+                <td>{{ h.reason|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

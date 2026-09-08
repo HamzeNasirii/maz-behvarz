@@ -1,0 +1,26 @@
+# محیط مجازی پایتون
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# اطلاعات حساس و پیکربندی
+.env
+db.sqlite3
+
+# فایل‌های ساخته‌شده توسط ابزارها
+staticfiles/
+.idea/
+.coverage
+*.log
+logs/
+
+# مدارک و فایل‌های آپلودی کاربران — هرگز نباید در گیت باشند
+documents/
+members/
+membership_applications/
+profile_pictures/
+public_content/
+
+# کش
+cache/

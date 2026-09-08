@@ -1,0 +1,198 @@
+.content-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.content-form-card {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.content-form-field {
+    margin-bottom: var(--space-4);
+}
+
+.content-form-field__label {
+    display: block;
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-2);
+    color: var(--color-text);
+}
+
+.content-form-field__required {
+    color: var(--color-danger);
+    margin-right: var(--space-1);
+}
+
+.content-form-field input[type="text"],
+.content-form-field input[type="email"],
+.content-form-field input[type="number"],
+.content-form-field input[type="url"],
+.content-form-field input[type="date"],
+.content-form-field textarea,
+.content-form-field select {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.content-form-field input:focus,
+.content-form-field textarea:focus,
+.content-form-field select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(20, 83, 41, 0.12);
+}
+
+.content-form-field textarea {
+    resize: none;
+    min-height: 100px;
+    line-height: 1.7;
+}
+
+.content-form-field--checkbox {
+    display: flex;
+}
+
+.content-form-field__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.content-form-field__checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.content-form-field__help {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+}
+
+.content-form-field__error {
+    font-size: var(--font-size-sm);
+    color: var(--color-danger);
+    margin-top: var(--space-1);
+}
+
+.content-form-field__image-preview {
+    display: block;
+    max-width: 220px;
+    max-height: 160px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    margin-top: var(--space-3);
+}
+
+.content-form-actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.quick-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.quick-modal__box {
+    position: relative;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    width: 90%;
+    max-width: 360px;
+    box-shadow: var(--shadow-md);
+}
+
+.quick-modal__box h3 {
+    margin-top: 0;
+}
+
+.quick-modal__box input {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.tagify {
+    --tag-bg: var(--color-primary-light, #e8f0ea);
+    --tag-text-color: var(--color-primary-dark, #14532d);
+    --tag-hover: var(--color-primary);
+    --tags-border-color: var(--color-border);
+    --tags-focus-border-color: var(--color-primary);
+    --placeholder-color: var(--color-text-muted);
+    font-family: inherit;
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+}
+
+[data-theme="dark"] .tagify {
+    --tag-bg: #1e2b23;
+    --tag-text-color: #a7f3d0;
+}
+
+.content-form-field input[type="time"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+}
+
+.content-form-field input[type="time"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(20, 83, 41, 0.12);
+}
+
+.content-form-field input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    transition: background 0.15s ease;
+}
+
+.content-form-field input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    background: var(--color-highlight-bg);
+}
+

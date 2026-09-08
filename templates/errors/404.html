@@ -1,0 +1,9 @@
+{% extends "base/public.html" %}
+{% block title %}صفحه پیدا نشد{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>صفحه پیدا نشد (۴۰۴)</h1>
+    <p>صفحه‌ی مورد نظر یافت نشد.</p>
+    <a href="{% url 'website:home' %}" class="btn btn-primary">بازگشت به خانه</a>
+</div>
+{% endblock %}

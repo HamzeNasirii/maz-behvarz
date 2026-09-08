@@ -1,0 +1,9 @@
+{% extends "base/public.html" %}
+{% block title %}درخواست نامعتبر{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>درخواست نامعتبر (۴۰۰)</h1>
+    <p>درخواست ارسالی معتبر نبود. لطفاً دوباره تلاش کنید.</p>
+    <a href="{% url 'website:home' %}" class="btn btn-primary">بازگشت به خانه</a>
+</div>
+{% endblock %}

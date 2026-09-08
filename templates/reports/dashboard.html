@@ -1,0 +1,144 @@
+{% extends "base/dashboard.html" %}
+{% block extra_css %}
+<style>
+.report-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4); }
+.report-stat-card { text-align: center; }
+.report-stat-card__value { font-size: var(--font-size-xl); font-weight: bold; color: var(--color-primary); }
+.report-stat-card__label { color: var(--color-text-muted); font-size: var(--font-size-sm); margin-top: var(--space-1); }
+.chart-card { position: relative; height: 300px; }
+</style>
+{% endblock %}
+{% block content %}
+<h1>گزارش‌ها و آمار</h1>
+
+<div class="report-summary-grid">
+    <div class="card report-stat-card">
+        <div class="report-stat-card__value">{{ member_stats.total }}</div>
+        <div class="report-stat-card__label">کل اعضا</div>
+    </div>
+    <div class="card report-stat-card">
+        <div class="report-stat-card__value" style="color: var(--color-success);">{{ member_stats.with_active_membership }}</div>
+        <div class="report-stat-card__label">عضویت فعال</div>
+    </div>
+    <div class="card report-stat-card">
+        <div class="report-stat-card__value" style="color: #f5a623;">{{ member_stats.pending }}</div>
+        <div class="report-stat-card__label">در انتظار تأیید</div>
+    </div>
+    <div class="card report-stat-card">
+        <div class="report-stat-card__value">{{ employment_stats.total_active }}</div>
+        <div class="report-stat-card__label">تخصیص محل خدمت فعال</div>
+    </div>
+    <div class="card report-stat-card">
+        <div class="report-stat-card__value">{{ board_committee_stats.active_board_members }}</div>
+        <div class="report-stat-card__label">اعضای هیئت‌مدیره</div>
+    </div>
+    <div class="card report-stat-card">
+        <div class="report-stat-card__value" style="color: var(--color-danger);">{{ extended_stats.unpaid_fees }}</div>
+        <div class="report-stat-card__label">حق‌عضویت پرداخت‌نشده</div>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4);">
+    <div class="card chart-card"><canvas id="memberStatusChart"></canvas></div>
+    <div class="card chart-card"><canvas id="countyChart"></canvas></div>
+    <div class="card chart-card"><canvas id="coverageChart"></canvas></div>
+    <div class="card chart-card"><canvas id="extendedChart"></canvas></div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">محل خدمت به تفکیک شهرستان</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>شهرستان</th><th>تعداد</th></tr>
+            {% for county, count in employment_stats.by_county.items %}
+            <tr><td>{{ county }}</td><td>{{ count }}</td></tr>
+            {% empty %}
+            <tr><td colspan="2">{% include "components/empty_state.html" with empty_message="داده‌ای وجود ندارد." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">آمار تکمیلی</h2>
+
+    <ul style="list-style:none; padding:0;">
+        <li>محل خدمت اصلی: <strong>{{ employment_stats.primary_only }}</strong></li>
+        <li>تعداد کمیته‌های فعال: <strong>{{ board_committee_stats.committees_count }}</strong></li>
+        <li>فروم‌های فعال: <strong>{{ extended_stats.active_forums }}</strong></li>
+        <li>کل پست‌های فروم: <strong>{{ extended_stats.total_forum_posts }}</strong></li>
+        <li>پیشنهادهای حذف عضو در انتظار تصمیم: <strong style="color: #f5a623;">{{ extended_stats.pending_removal_proposals }}</strong></li>
+        <li>کل درخواست‌های در جریان: <strong style="color: #f5a623;">{{ extended_stats.pending_requests_total }}</strong></li>
+        <li>پوشش شهرستانی: <strong>{{ county_coverage.counties_with_active_members }}</strong> از <strong>{{ county_coverage.total_counties }}</strong> شهرستان حداقل یک عضو فعال دارند.</li>
+    </ul>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+(function () {
+    var green = "#145329";
+    var palette = ["#145329", "#f5a623", "#4a90d9", "#c0392b", "#8e44ad", "#16a085", "#e67e22", "#2c3e50"];
+
+    new Chart(document.getElementById("memberStatusChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["عضویت فعال", "در انتظار تأیید", "تأییدشده (غیرفعال)", "ردشده"],
+            datasets: [{
+                data: [
+                    {{ member_stats.with_active_membership }},
+                    {{ member_stats.pending }},
+                    {{ member_stats.approved }},
+                    {{ member_stats.rejected }}
+                ],
+                backgroundColor: palette,
+            }],
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: "وضعیت اعضا" } } },
+    });
+
+    var countyLabels = [{% for county, count in employment_stats.by_county.items %}"{{ county }}",{% endfor %}];
+    var countyValues = [{% for county, count in employment_stats.by_county.items %}{{ count }},{% endfor %}];
+
+    new Chart(document.getElementById("countyChart"), {
+        type: "bar",
+        data: { labels: countyLabels, datasets: [{ label: "تعداد تخصیص فعال", data: countyValues, backgroundColor: green }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { title: { display: true, text: "محل خدمت به تفکیک شهرستان" }, legend: { display: false } } },
+    });
+
+    new Chart(document.getElementById("coverageChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["شهرستان‌های دارای عضو فعال", "بدون عضو فعال"],
+            datasets: [{
+                data: [
+                    {{ county_coverage.counties_with_active_members }},
+                                        {{ county_coverage.counties_without_active_members }}
+                ],
+                backgroundColor: [green, "#dfe4e2"],
+            }],
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: "پوشش شهرستانی" } } },
+    });
+
+    new Chart(document.getElementById("extendedChart"), {
+        type: "bar",
+        data: {
+            labels: ["فروم فعال", "پست فروم", "حق‌عضویت پرداخت‌نشده", "حذف در انتظار", "درخواست در جریان"],
+            datasets: [{
+                label: "تعداد",
+                data: [
+                    {{ extended_stats.active_forums }},
+                    {{ extended_stats.total_forum_posts }},
+                    {{ extended_stats.unpaid_fees }},
+                    {{ extended_stats.pending_removal_proposals }},
+                    {{ extended_stats.pending_requests_total }}
+                ],
+                backgroundColor: palette,
+            }],
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: "آمار تکمیلی سیستم" }, legend: { display: false } } },
+    });
+})();
+</script>
+{% endblock %}

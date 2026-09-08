@@ -1,0 +1,18 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>مدیریت محدوده‌های دسترسی</h1>
+<a href="{% url 'auth_ref:scope_create' %}" class="btn btn-primary">+ ایجاد محدوده‌ی جدید</a>
+<div class="table-wrapper">
+    <table class="data-table">
+        <tr><th>نوع</th><th>هدف</th></tr>
+        {% for scope in scopes %}
+        <tr>
+            <td>{{ scope.get_scope_type_display }}</td>
+            <td>{{ scope }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="2">{% include "components/empty_state.html" with empty_message="محدوده‌ای ثبت نشده است." %}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

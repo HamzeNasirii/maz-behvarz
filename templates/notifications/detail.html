@@ -1,0 +1,15 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+
+    <h1>{{ notification.title }}</h1>
+    <div class="card">
+        <p>{{ notification.message }}</p>
+        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">{{ notification.created_at|jalali }}
+            — {{ notification.created_at|date:"H:i" }}</p>    {% if not notification.is_read %}
+        <form method="post" action="{% url 'notifications_portal:mark_read' pk=notification.pk %}">
+            {% csrf_token %}
+        </form>
+    {% endif %}
+    </div>
+{% endblock %}

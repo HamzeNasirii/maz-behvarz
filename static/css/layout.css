@@ -1,0 +1,170 @@
+/* --- Public Layout --- */
+.site-header {
+    background-color: var(--color-primary);
+    color: #fff;
+    padding: var(--space-4) var(--space-6);
+}
+
+.site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-6);
+}
+
+.site-nav__brand {
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+    text-decoration: none;
+    color: #fff;
+}
+
+.site-nav__links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.site-nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+}
+.site-nav a:hover { text-decoration: underline; }
+
+.site-nav .btn-link {
+    color: #fff;
+}
+
+/* دکمه‌ی تغییر حالت روز/شب همیشه در سمت چپ نوار (انتهای جهت RTL) می‌نشیند،
+   جدا از گروه لینک‌های اصلی که کنار نام انجمن در سمت راست قرار دارند */
+.site-nav .theme-toggle {
+    margin-inline-start: auto;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.site-nav .theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.site-nav__toggle {
+    display: none;
+    background: none;
+    border: 1px solid #fff;
+    color: #fff;
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2);
+}
+
+.site-main {
+    max-width: 900px;
+    margin: var(--space-8) auto;
+    padding: 0 var(--space-4);
+}
+
+.site-footer {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: var(--space-8) 0;
+    font-size: var(--font-size-sm);
+}
+
+/* --- Dashboard Layout --- */
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+.dashboard__sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--color-surface);
+    border-left: 1px solid var(--color-border);
+    padding: var(--space-4);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.dashboard__sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard__sidebar nav a {
+    display: block;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    text-decoration: none;
+    margin-bottom: var(--space-1);
+}
+
+.dashboard__sidebar nav a:hover,
+.dashboard__sidebar nav a[aria-current="page"] {
+    background-color: var(--color-bg);
+    color: var(--color-primary);
+}
+
+.dashboard__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dashboard__topbar {
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dashboard__topbar-toggle {
+    display: none;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2);
+    cursor: pointer;
+}
+
+.dashboard__topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.dashboard__topbar-logout-form {
+    display: inline;
+}
+
+.dashboard__breadcrumb {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.dashboard__content {
+    padding: var(--space-4);
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .dashboard__sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        z-index: 100;
+        transform: translateX(100%);
+        box-shadow: var(--shadow-md);
+        overflow-y: auto;
+    }
+
+    .dashboard__sidebar.dashboard__sidebar--open {
+        transform: translateX(0);
+    }
+}

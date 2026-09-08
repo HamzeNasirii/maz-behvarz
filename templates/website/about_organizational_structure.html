@@ -1,0 +1,19 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="card">
+    <h1>ساختار سازمانی</h1>
+    <p>ساختار سازمانی انجمن بر پایه‌ی نظام سلامت کشور، به این شکل است:</p>
+    {% for province in provinces %}
+        <h3>{{ province.name }}</h3>
+        <ul>
+            {% for county in province.counties.all %}
+                {% if county.is_active %}
+                    <li>{{ county.name }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="ساختار سازمانی هنوز ثبت نشده است." %}
+    {% endfor %}
+</div>
+{% endblock %}

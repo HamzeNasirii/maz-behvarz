@@ -1,0 +1,48 @@
+{% extends "base/dashboard.html" %}
+{% load auth_extras %}
+{% block content %}
+    <h1>فروم‌ها</h1>
+
+    {% if member_documents_pending %}
+        <div class="card card--highlight" style="text-align:center; padding: var(--space-6);">
+            <div style="font-size: 40px;">🔒</div>
+            <h2 style="margin: var(--space-3) 0;">دسترسی فروم هنوز فعال نشده است</h2>
+            <p style="color: var(--color-text-muted); max-width: 480px; margin: 0 auto var(--space-4);">
+                برای دسترسی به فروم‌ها، ابتدا باید مدارک خود (آخرین حکم کارگزینی، نامه‌ی اشتغال به کار ممهور شبکه بهداشت،
+                تصویر کارت ملی، تصاویر شناسنامه) را ارسال کنید. پس از بررسی و تأیید مدارک شما توسط دبیر،
+                رئیس یا نایب‌رئیس انجمن، دسترسی فروم‌ها برایتان فعال خواهد شد.
+            </p>
+            <div style="display:flex; gap: var(--space-3); justify-content:center; flex-wrap:wrap;">
+                <a href="{% url 'members_portal:documents' %}" class="btn btn-primary">ارسال مدارک</a>
+                                <a href="{% url 'requests_portal:list' %}" class="btn btn-secondary">پیگیری وضعیت</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>نام</th>
+                    <th>توضیحات</th>
+                    <th></th>
+                </tr>
+                {% for forum in forums %}
+                    <tr>
+                        <td><a href="{% url 'forums:detail' pk=forum.pk %}">{{ forum.name }}</a></td>
+                        <td>{{ forum.description }}</td>
+                        <td>
+                            {% with count=unread_counts|get_item:forum.id %}
+                                {% if count %}
+                                    <span class="badge" style="background: var(--color-danger); color:#fff;">{{ count }} پست جدید</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">{% include "components/empty_state.html" with empty_message="هنوز فرومی برای محل خدمت شما ایجاد نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

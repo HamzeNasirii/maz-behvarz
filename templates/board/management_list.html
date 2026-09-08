@@ -1,0 +1,44 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+<h1>مدیریت دوره‌های هیئت‌مدیره</h1>
+{% if create_form %}
+<div class="card">
+    <h2 class="card__title">ایجاد دوره‌ی جدید</h2>
+    {% include "components/form_errors.html" %}
+    <form method="post" class="board-create-form">
+        {% csrf_token %}
+        <div style="display:flex; gap: var(--space-4); align-items:flex-end; flex-wrap: wrap;">
+            {% for field in create_form %}
+                <div style="flex:1; min-width:180px;">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="form-error-text">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">ایجاد دوره</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+<div class="card">
+    <h2 class="card__title">دوره‌های ثبت‌شده</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>نام دوره</th><th>وضعیت</th><th>از تاریخ</th><th>تا تاریخ</th><th>تعداد اعضا</th><th></th></tr>
+            {% for board in boards %}
+            <tr>
+                <td>{{ board.name }}</td>
+                <td><span class="badge badge-{% if board.status == "active" %}active{% else %}inactive{% endif %}">{{ board.get_status_display }}</span></td>
+                <td>{{ board.start_date|jalali }}</td>
+                <td>{{ board.end_date|jalali|default:"—" }}</td>
+                <td>{{ board.member_count }}</td>
+                <td><a href="{% url 'board_mgmt:detail' pk=board.pk %}" class="btn btn-warning btn-sm">مشاهده</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">{% include "components/empty_state.html" with empty_message="دوره‌ای ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/org-tree.css' %}">
+{% endblock %}
+{% block content %}
+    <h1>مدیریت ساختار سازمانی</h1>
+    <div class="card">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-3);">
+            <h2 class="card__title" style="margin-bottom:0;">استان‌ها</h2>
+
+            <form method="get" class="member-search-form" autocomplete="off">
+                <div class="member-search-form__input-wrapper">
+                    <input type="text" name="q" id="org-search-input" placeholder="جستجو در کل ساختار سازمانی...">
+                    <div id="org-search-suggestions" class="org-search-suggestions" style="display:none;"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">جستجو</button>
+            </form>
+
+            {% if user.is_staff %}
+                <a href="{% url 'org_mgmt:create' level='province' %}" class="btn btn-primary">+ افزودن استان</a>
+            {% endif %}
+        </div>
+        <ul class="org-simple-list">
+            {% for item in items %}
+                <li class="org-simple-list__row">
+                    <span class="org-tree__status-dot {% if item.is_active %}is-active{% else %}is-inactive{% endif %}"></span>
+                    <a href="{% url 'org_mgmt:detail' level='province' pk=item.pk %}"
+                       class="org-simple-list__name">{{ item.name }}</a>
+                </li>
+            {% empty %}
+                <li>{% include "components/empty_state.html" with empty_message="هیچ استانی ثبت نشده است." %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        (function () {
+            var input = document.getElementById("org-search-input");
+            var box = document.getElementById("org-search-suggestions");
+            var timer = null;
+
+            input.addEventListener("input", function () {
+                clearTimeout(timer);
+                var q = input.value.trim();
+                if (q.length < 2) {
+                    box.style.display = "none";
+                    return;
+                }
+                timer = setTimeout(function () {
+                    fetch("{% url 'org_mgmt:search_suggestions' %}?q=" + encodeURIComponent(q))
+                        .then(function (r) {
+                            return r.json();
+                        })
+                        .then(function (data) {
+                            box.innerHTML = "";
+                            if (data.results.length === 0) {
+                                box.style.display = "none";
+                                return;
+                            }
+                            data.results.forEach(function (item) {
+                                var a = document.createElement("a");
+                                a.href = "/management/organization/" + item.level + "/" + item.pk + "/";
+                                a.className = "org-search-suggestions__item";
+                                a.textContent = item.name + " (" + item.level_label + ")";
+                                box.appendChild(a);
+                            });
+                            box.style.display = "block";
+                        });
+                }, 250);
+            });
+
+            document.addEventListener("click", function (e) {
+                if (!box.contains(e.target) && e.target !== input) {
+                    box.style.display = "none";
+                }
+            });
+        })();
+    </script>
+{% endblock %}

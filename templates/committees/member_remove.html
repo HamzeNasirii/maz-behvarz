@@ -1,0 +1,13 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>حذف عضو</h1>
+<div class="card">
+    <p>{{ membership.user.get_full_name|default:membership.user.username }} از {{ membership.committee.name }}</p>
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-danger">تأیید حذف</button>
+    </form>
+</div>
+{% endblock %}

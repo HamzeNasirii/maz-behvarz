@@ -1,0 +1,14 @@
+{% extends "base/base.html" %}
+{% block body %}
+<header class="site-header">
+    {% include "components/navbar.html" %}
+</header>
+<main class="site-main">
+    {% include "components/alerts.html" %}
+    {% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+    {% include "components/footer.html" %}
+</footer>
+{% endblock %}
+{% block extra_js %}{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base/base.html" %}
+{% block body %}
+    <a href="#main-content" class="skip-link">رفتن به محتوای اصلی</a>
+    <div class="dashboard">
+        <aside class="dashboard__sidebar" data-sidebar>
+            <a href="{% url 'website:home' %}" class="dashboard__back-link">← بازگشت به سایت</a>
+            <nav aria-label="ناوبری اصلی">
+                <details open>
+                    <summary>پرتال من</summary>
+                    <ul>
+                        {% if not user.is_staff %}
+                            <li><a href="{% url 'members_portal:dashboard' %}">داشبورد</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'members_portal:profile' %}">پروفایل</a></li>
+                        {% if not user.is_staff %}
+                            <li><a href="{% url 'members_portal:employment_history' %}">محل خدمت</a></li>
+                            <li><a href="{% url 'roles:portal_roles' %}">نقش‌ها</a></li>
+                            <li><a href="{% url 'members_portal:documents' %}">ارسال مدارک</a></li>
+                            <li><a href="{% url 'requests_portal:list' %}">درخواست‌های من</a></li>
+                            <li><a href="{% url 'members_portal:my_fees' %}">حق‌های عضویت من</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'forums:list' %}">فروم‌ها</a></li>
+                        <li><a href="{% url 'notifications_portal:list' %}">اعلان‌ها</a></li>
+                    </ul>
+                </details>
+
+                {% if can_manage_members_ctx %}
+                    <details>
+                        <summary>مدیریت اعضا</summary>
+                        <ul>
+                            <li><a href="{% url 'members_portal:hub' %}">مدیریت اعضا</a></li>
+                            <li><a href="{% url 'members_fees:list' %}">حق‌های عضویت</a></li>
+                            {% if can_manage_organization %}
+                                <li><a href="{% url 'roles:management_list' %}">تخصیص نقش‌ها</a></li>
+                                <li><a href="{% url 'members_portal:removal_proposals' %}">پیشنهادهای حذف عضو</a></li>
+                            {% endif %}
+                        </ul>
+                    </details>
+                {% endif %}
+
+                {% if can_view_pending_dashboard %}
+                    <details>
+                        <summary>مدیریت سیستم</summary>
+                        <ul>
+                            <li><a href="{% url 'org_mgmt:tree' %}">ساختار سازمانی</a></li>
+                            <li><a href="{% url 'auth_ref:role_list' %}">نقش‌ها</a></li>
+                            <li><a href="{% url 'auth_ref:permission_list' %}">مجوزها</a></li>
+                            <li><a href="{% url 'auth_ref:scope_list' %}">محدوده‌های دسترسی</a></li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>هیئت‌مدیره و کمیته‌ها</summary>
+                        <ul>
+                            <li><a href="{% url 'board_mgmt:list' %}">مدیریت هیئت‌مدیره</a></li>
+                            <li><a href="{% url 'committees_mgmt:list' %}">کمیته‌ها</a></li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>محتوا و ارتباطات</summary>
+                        <ul>
+                            <li><a href="{% url 'public_content_mgmt:hub' %}">محتوای عمومی سایت</a></li>
+                            <li><a href="{% url 'documents_mgmt:list' %}">اسناد</a></li>
+                            <li><a href="{% url 'forums:management_list' %}">مدیریت فروم‌ها</a></li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>گزارش‌ها و سیستم</summary>
+                        <ul>
+                            <li>
+                                <a href="/admin/pending-requests/">
+                                    درخواست‌های در انتظار
+                                    {% if pending_requests_count %}
+                                        <span class="badge badge-warning">{{ pending_requests_count }}</span>{% endif %}
+                                </a>
+                            </li>
+                            <li><a href="/admin/reports/">گزارش‌ها و آمار</a></li>
+                            {% if user.is_staff %}
+                                <li><a href="/admin/">مدیریت کامل (Admin)</a></li>
+                            {% endif %}
+                        </ul>
+                    </details>
+                {% endif %}
+            </nav>
+        </aside>
+        <div class="dashboard__body">
+            <div class="dashboard__topbar">
+                <button type="button" class="dashboard__topbar-toggle" data-sidebar-toggle
+                        aria-label="باز/بسته کردن منو">☰
+                </button>
+                <div class="topbar-user">
+                    {% if request.user.profile_picture %}
+                        <img src="{{ request.user.profile_picture.url }}" alt=""
+                             class="topbar-user__avatar topbar-user__avatar--small">
+                    {% else %}
+                        <div class="topbar-user__avatar topbar-user__avatar--placeholder topbar-user__avatar--small">
+                            {{ request.user.get_full_name|default:request.user.username|first }}
+                        </div>
+                    {% endif %}
+                    <span>
+                        {{ request.user.get_full_name|default:request.user.username }}
+                        {% if request.user.nickname %}
+                            <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">({{ request.user.nickname }})</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="dashboard__topbar-actions">
+                    <button type="button" class="theme-toggle" data-theme-toggle aria-label="تغییر حالت روز/شب"
+                            aria-pressed="false">
+                        <span data-theme-icon aria-hidden="true">🌙</span>
+                    </button>
+                    <form method="post" action="{% url 'logout' %}" class="dashboard__topbar-logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-link">خروج</button>
+                    </form>
+                </div>
+            </div>
+            {% block breadcrumb %}{% endblock %}
+                       <main class="dashboard__content" id="main-content">
+                {% include "components/alerts.html" %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+{% endblock %}

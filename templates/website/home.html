@@ -1,0 +1,158 @@
+{% extends "website/base.html" %}
+{% block content %}
+
+    {% if hero_slides %}
+        <div class="hero-slider">
+            <div class="hero-slider__track">
+                {% for slide in hero_slides %}
+                    <section class="hero-slider__slide{% if forloop.first %} hero-slider__slide--active{% endif %}"
+                             style="background: {% if slide.image %}url('{{ slide.image.url }}') center/cover no-repeat{% else %}linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-dark) 100%){% endif %};">
+                        <div class="hero-slider__overlay">
+                            <h1>{{ slide.title }}</h1>
+                            {% if slide.subtitle %}<p>{{ slide.subtitle }}</p>{% endif %}
+                            {% if slide.cta_text and slide.cta_link %}
+                                <a href="{{ slide.cta_link }}" class="btn"
+                                   style="background:#fff; color: var(--color-primary);">{{ slide.cta_text }}</a>
+                            {% endif %}
+                        </div>
+                    </section>
+                {% endfor %}
+            </div>
+            {% if hero_slides|length > 1 %}
+                <div class="hero-slider__dots">
+                    {% for slide in hero_slides %}
+                        <button type="button"
+                                class="hero-slider__dot{% if forloop.first %} hero-slider__dot--active{% endif %}"
+                                data-slide-index="{{ forloop.counter0 }}"></button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <section class="card"
+                 style="text-align: center; background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: #fff;">
+            <h1 style="color: #fff;">انجمن صنفی بهورزان استان مازندران</h1>
+            <p>صدای صنفی بهورزان، برای دفاع از حقوق و جایگاه حرفه‌ای بهورزی</p>
+            {% if not user.is_staff and not is_approved_member %}
+                <a href="{% url 'website:membership_application' %}" class="btn btn-secondary">درخواست عضویت</a>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    {% if featured_announcements %}
+        <section class="card">
+            <h2 class="card__title">اطلاعیه‌های مهم</h2>
+            {% for item in featured_announcements %}
+                <p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    <section class="card">
+        <h2 class="card__title">آخرین اخبار</h2>
+        {% for item in latest_news %}
+            <p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
+        {% empty %}
+            {% include "components/empty_state.html" with empty_message="در حال حاضر خبری برای نمایش وجود ندارد." %}
+        {% endfor %}
+        <a href="{% url 'public_content:news_list' %}">مشاهده‌ی همه‌ی اخبار ←</a>
+    </section>
+
+    <section class="card">
+        <h2 class="card__title">رویدادهای پیش‌رو</h2>
+        {% for item in upcoming_events %}
+            <p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a> — {{ item.start_datetime|date:"Y-m-d" }}</p>
+        {% empty %}
+            {% include "components/empty_state.html" with empty_message="در حال حاضر رویداد پیش‌رویی وجود ندارد." %}
+        {% endfor %}
+    </section>
+
+    <section class="card">
+        <h2 class="card__title">درباره‌ی انجمن</h2>
+        <p>انجمن صنفی بهورزان استان مازندران با هدف حمایت از حقوق صنفی، ارتقای جایگاه حرفه‌ای، و ایجاد شبکه‌ای منسجم از
+            بهورزان استان تشکیل شده است.</p>
+        <a href="{% url 'website:about' %}">بیشتر بدانید ←</a>
+    </section>
+
+    <section class="card">
+        <h2 class="card__title">دسترسی سریع</h2>
+        <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
+            {% if not user.is_staff and not is_approved_member %}
+                <a href="{% url 'website:membership_application' %}" class="btn btn-secondary">درخواست عضویت</a>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <a href="{% url 'members_portal:dashboard' %}" class="btn btn-secondary">پنل عضویت</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-secondary">ورود اعضا</a>
+            {% endif %}
+            <a href="{% url 'public_content:document_list' %}" class="btn btn-secondary">اسناد</a>
+            <a href="{% url 'website:contact' %}" class="btn btn-secondary">تماس با ما</a>
+        </div>
+    </section>
+    {% if board_history %}
+        <section class="card">
+            <h2 class="card__title">تاریخچه‌ی هیئت‌مدیره</h2>
+            {% for period in board_history %}
+                <div style="margin-bottom: var(--space-6);">
+                    <h3>دوره‌ی {{ period.period_number }} — {{ period.board.name }}</h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-3);">
+                        {% for membership in period.memberships %}
+                            <div class="card" style="text-align:center;">
+                                {% if membership.user.profile_picture %}
+                                    <img src="{{ membership.user.profile_picture.url }}" alt=""
+                                         style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin: 0 auto var(--space-2);">
+                                {% else %}
+                                    <div style="width:80px; height:80px; border-radius:50%; background: var(--color-bg); display:flex; align-items:center; justify-content:center; font-size:24px; margin: 0 auto var(--space-2);">
+                                        {{ membership.user.get_full_name|default:membership.user.username|first }}
+                                    </div>
+                                {% endif %}
+                                <p style="font-weight:bold; margin: 0;">{{ membership.user.get_full_name|default:membership.user.username }}</p>
+                                <p style="color: var(--color-primary); font-size: var(--font-size-sm); margin: var(--space-1) 0;">{{ membership.get_position_display }}</p>
+                                {% if membership.user.member_profile.mobile_number %}
+                                    <p style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin:0;">{{ membership.user.member_profile.mobile_number }}</p>
+                                {% endif %}
+                                {% if membership.user.member_profile.years_of_service is not None %}
+                                    <p style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin:0;">{{ membership.user.member_profile.years_of_service }}
+                                        سال سابقه</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </section>
+    {% endif %}
+{% endblock %}
+{% block extra_js %}
+    <script>
+        (function () {
+            var slides = document.querySelectorAll(".hero-slider__slide");
+            var dots = document.querySelectorAll(".hero-slider__dot");
+            if (slides.length < 2) return;
+
+            var current = 0;
+
+            function showSlide(index) {
+                slides.forEach(function (s) {
+                    s.classList.remove("hero-slider__slide--active");
+                });
+                dots.forEach(function (d) {
+                    d.classList.remove("hero-slider__dot--active");
+                });
+                slides[index].classList.add("hero-slider__slide--active");
+                if (dots[index]) dots[index].classList.add("hero-slider__dot--active");
+                current = index;
+            }
+
+            dots.forEach(function (dot) {
+                dot.addEventListener("click", function () {
+                    showSlide(parseInt(dot.dataset.slideIndex, 10));
+                });
+            });
+
+            setInterval(function () {
+                showSlide((current + 1) % slides.length);
+            }, 5000);
+        })();
+    </script>
+{% endblock %}

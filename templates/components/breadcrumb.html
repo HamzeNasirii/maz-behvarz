@@ -1,0 +1,6 @@
+<nav aria-label="مسیر صفحه" style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--space-4);">
+    <a href="{% url 'website:home' %}">خانه</a>
+    {% for item in breadcrumb_items %}
+        &gt; {% if item.url %}<a href="{{ item.url }}">{{ item.label }}</a>{% else %}{{ item.label }}{% endif %}
+    {% endfor %}
+</nav>

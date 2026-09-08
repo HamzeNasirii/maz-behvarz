@@ -1,0 +1,64 @@
+* { box-sizing: border-box; }
+
+body {
+    font-family: Tahoma, "Segoe UI", sans-serif;
+    background-color: #f7f8fa;
+    color: #222;
+    margin: 0;
+    line-height: 1.8;
+}
+
+header {
+    background-color: #14532d;
+    color: #fff;
+    padding: 1rem 2rem;
+}
+
+header nav a {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-size: 0.95rem;
+}
+
+header nav a:hover { text-decoration: underline; }
+
+main {
+    max-width: 780px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+form p { margin-bottom: 1rem; }
+
+input, textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+button, input[type="submit"] {
+    background-color: #14532d;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+footer {
+    text-align: center;
+    color: #777;
+    padding: 2rem 0;
+    font-size: 0.85rem;
+}

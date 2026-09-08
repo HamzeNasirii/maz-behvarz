@@ -1,0 +1,16 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>{{ forum.name }}</h1>
+<a href="{% url 'forums:post_create' forum_pk=forum.pk %}" class="btn btn-primary">+ پست جدید</a>
+<div class="card" style="margin-top: var(--space-4);">
+    {% for post in posts %}
+    <div style="padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border);">
+        {% if post.is_pinned %}<span class="badge badge-warning">پین‌شده</span>{% endif %}
+        <h3><a href="{% url 'forums:post_detail' pk=post.pk %}">{{ post.title }}</a></h3>
+        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">{{ post.author.get_full_name|default:post.author.username }} — {{ post.created_at|date:"Y-m-d H:i" }}</p>
+    </div>
+    {% empty %}
+    {% include "components/empty_state.html" with empty_message="پستی ثبت نشده است." %}
+    {% endfor %}
+</div>
+{% endblock %}

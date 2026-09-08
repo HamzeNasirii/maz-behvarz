@@ -1,0 +1,55 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/org-tree.css' %}">
+{% endblock %}
+{% block content %}
+    <nav style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--space-4);">
+        <a href="{% url 'org_mgmt:tree' %}">استان‌ها</a>
+        {% for a in ancestors %}
+            &gt; <a href="{% url 'org_mgmt:detail' level=a.level pk=a.pk %}">{{ a.name }}</a>
+        {% endfor %}
+        &gt; <strong>{{ instance.name }}</strong>
+    </nav>
+
+    <div class="card">
+        <div style="display:flex; justify-content: space-between; align-items:center;">
+            <h1 style="margin:0;">{{ instance.name }}</h1>
+            <span class="badge {% if instance.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+            {% if instance.is_active %}فعال{% else %}غیرفعال{% endif %}
+        </span>
+        </div>
+        <p style="color: var(--color-text-muted); margin-top: var(--space-1);">{{ level_label }}</p>
+        <div style="display:flex; gap: var(--space-2); margin-top: var(--space-3);">
+            <a href="{% url 'org_mgmt:edit' level=level pk=instance.pk %}" class="btn btn-warning btn-sm">ویرایش</a>
+            <form method="post" action="{% url 'org_mgmt:toggle' level=level pk=instance.pk %}">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-sm {% if instance.is_active %}btn-danger{% else %}btn-success{% endif %}">
+                    {% if instance.is_active %}غیرفعال کن{% else %}فعال کن{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if next_level %}
+        <div class="card">
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: var(--space-3);">
+                <h2 class="card__title" style="margin-bottom:0;">{{ next_label }}‌های زیرمجموعه</h2>
+                <a href="{% url 'org_mgmt:create' level=next_level %}?parent={{ instance.pk }}" class="btn btn-primary">+
+                    افزودن {{ next_label }}</a>
+            </div>
+            <ul class="org-simple-list">
+                {% for child in children %}
+                    <li class="org-simple-list__row">
+                        <span class="org-tree__status-dot {% if child.is_active %}is-active{% else %}is-inactive{% endif %}"></span>
+                        <a href="{% url 'org_mgmt:detail' level=child.level pk=child.pk %}"
+                           class="org-simple-list__name">{{ child.name }}</a>
+                    </li>
+                {% empty %}
+                    <li>{% include "components/empty_state.html" with empty_message="زیرمجموعه‌ای ثبت نشده است." %}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}

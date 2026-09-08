@@ -1,0 +1,16 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>جزئیات تخصیص محل خدمت</h1>
+<div class="card">
+    <p>کاربر: {{ assignment.user.get_full_name|default:assignment.user.username }}</p>
+    <p>خانه بهداشت: {{ assignment.health_house.name }}</p>
+    <p>مرکز: {{ assignment.health_house.center.name }}</p>
+    <p>نوع: {{ assignment.get_employment_type_display }}</p>
+    <p>از تاریخ: {{ assignment.start_date }} — تا: {{ assignment.end_date|default:"تاکنون" }}</p>
+    <p>وضعیت: <span class="badge badge-{% if assignment.is_active %}active{% else %}inactive{% endif %}">{% if assignment.is_active %}فعال{% else %}پایان‌یافته{% endif %}</span></p>
+    <p>وضعیت تأیید: <span class="badge badge-{{ assignment.approval_status }}">{{ assignment.get_approval_status_display }}</span></p>
+    {% if assignment.is_active %}
+        <a href="{% url 'employment:end' pk=assignment.pk %}" class="btn btn-danger">پایان‌دادن به این تخصیص</a>
+    {% endif %}
+</div>
+{% endblock %}

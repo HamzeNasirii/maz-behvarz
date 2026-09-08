@@ -1,0 +1,17 @@
+[Unit]
+Description=Gunicorn daemon for Behvarzan Site
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/behvarzan_site
+EnvironmentFile=/var/www/behvarzan_site/.env
+ExecStart=/var/www/behvarzan_site/.venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/run/behvarzan_site.sock \
+    config.wsgi:application
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,59 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>وضعیت پوشش فروم‌ها</h1>
+<a href="{% url 'forums:management_list' %}" class="btn btn-secondary">بازگشت به فهرست فروم‌ها</a>
+
+<div class="card" style="margin-top: var(--space-4);">
+    <div style="display:flex; gap: var(--space-4); margin-bottom: var(--space-4); font-size: var(--font-size-sm);">
+        <span><span class="badge badge-active">فعال</span> فروم دارد و فعال است</span>
+        <span><span class="badge" style="background:#f5a623; color:#fff;">غیرفعال</span> فروم دارد ولی غیرفعال است</span>
+        <span><span class="badge badge-inactive">بدون فروم</span> هنوز فرومی ساخته نشده</span>
+    </div>
+
+    <table class="data-table">
+        <tr><th>سطح</th><th>نام</th><th>وضعیت</th><th>فعال/غیرفعال</th></tr>
+        {% for row in rows %}
+        <tr>
+            <td style="padding-right: calc(var(--space-4) * {{ row.depth }});">
+                {% if row.level == "province" %}استان{% elif row.level == "county" %}شهرستان{% elif row.level == "network" %}شبکه{% else %}مرکز{% endif %}
+            </td>
+            <td style="padding-right: calc(var(--space-4) * {{ row.depth }});">{{ row.name }}</td>
+            <td>
+                {% if row.status == "active" %}
+                    <span class="badge badge-active">فعال</span>
+                {% elif row.status == "inactive" %}
+                    <span class="badge" style="background:#f5a623; color:#fff;">غیرفعال</span>
+                {% elif row.status == "no_scope" %}
+                    <span class="badge badge-inactive" title="هنوز محدوده‌ی دسترسی برای این گره ساخته نشده">بدون محدوده</span>
+                {% else %}
+                    <span class="badge badge-inactive">بدون فروم</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if row.status == "active" or row.status == "inactive" %}
+                    <form method="post" action="{% url 'forums:toggle_active' pk=row.forum_pk %}" class="toggle-switch">
+                        {% csrf_token %}
+                        <button type="submit" class="toggle-switch__track {% if row.status == "active" %}toggle-switch__track--on{% else %}toggle-switch__track--off{% endif %}" title="{% if row.status == 'active' %}کلیک برای غیرفعال‌کردن{% else %}کلیک برای فعال‌کردن{% endif %}">
+                            <span class="toggle-switch__thumb"></span>
+                        </button>
+                        <span class="toggle-switch__label {% if row.status == "active" %}toggle-switch__label--on{% else %}toggle-switch__label--off{% endif %}">
+                            {% if row.status == "active" %}ON{% else %}OFF{% endif %}
+                        </span>
+                    </form>
+                {% elif row.status == "missing" %}
+                    <form method="post" action="{% url 'forums:quick_create' level=row.level pk=row.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="quick-create-btn" title="ایجاد سریع فروم برای این محدوده">
+                            <span class="quick-create-btn__icon">+</span>
+                            <span>ساخت فروم</span>
+                        </button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">{% include "components/empty_state.html" with empty_message="هیچ استانی در محدوده‌ی دسترسی شما یافت نشد." %}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

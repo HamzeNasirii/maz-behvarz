@@ -1,0 +1,66 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% load auth_extras %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/content-form.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="content-form-header">
+        <h1>ویرایش نقش «{{ role.name }}»</h1>
+        <a href="{% url 'auth_ref:role_list' %}" class="btn btn-secondary">بازگشت به فهرست</a>
+    </div>
+
+    <div class="card content-form-card" style="max-width: 900px;">
+        {% include "components/form_errors.html" %}
+        <form method="post">
+            {% csrf_token %}
+
+            <div style="display:flex; gap: var(--space-4); flex-wrap: wrap;">
+                <div class="content-form-field" style="flex:1; min-width:150px;">
+                    <label class="content-form-field__label">کد نقش</label>
+                    {{ form.code }}
+                </div>
+                <div class="content-form-field" style="flex:1; min-width:150px;">
+                    <label class="content-form-field__label">نام نقش</label>
+                    {{ form.name }}
+                </div>
+                <div class="content-form-field" style="flex:2; min-width:200px;">
+                    <label class="content-form-field__label">توضیحات</label>
+                    {{ form.description }}
+                </div>
+            </div>
+            <div class="content-form-field">
+                <label class="content-form-field__checkbox-label">
+                    {{ form.is_active }} فعال
+                </label>
+            </div>
+
+            <div class="content-form-field">
+                <label class="content-form-field__label">مجوزها</label>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <tr>
+                            <th style="width:40px;"></th>
+                            <th>عنوان مجوز</th>
+                            <th>توضیح</th>
+                        </tr>
+                        {% for checkbox in form.permissions %}
+                            <tr>
+                                <td>{{ checkbox.tag }}</td>
+                                <td>{{ checkbox.choice_label }}</td>
+                                <td style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                                    {{ permission_descriptions|get_item:checkbox.data.value|default:"—" }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            <div class="content-form-actions">
+                <button type="submit" class="btn btn-primary">ذخیره</button>
+                <a href="{% url 'auth_ref:role_list' %}" class="btn btn-secondary">انصراف</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

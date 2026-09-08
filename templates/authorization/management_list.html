@@ -1,0 +1,67 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+{% if target_user %}
+    <h1>نقش‌های {{ target_user.get_full_name|default:target_user.username }}</h1>
+
+    {% if create_form %}
+    <div class="card">
+        <h2 class="card__title">تخصیص نقش جدید</h2>
+        {% include "components/form_errors.html" %}
+        <form method="post" class="board-create-form">
+            {% csrf_token %}
+            {% for field in create_form %}
+                {% if field.name == "user" %}
+                    {{ field.as_hidden }}
+                {% else %}
+                    <div style="margin-bottom: var(--space-4);">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: var(--space-1);">{{ field.help_text }}</p>{% endif %}
+                        {% if field.errors %}<span class="form-error-text">{{ field.errors.0 }}</span>{% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">ثبت پیشنهاد</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <h2 class="card__title">نقش‌های ثبت‌شده</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr><th>نقش</th><th>محدوده</th><th>وضعیت</th><th></th></tr>
+                {% for a in assignments %}
+                <tr>
+                    <td>{{ a.role.name }}</td>
+                    <td>{{ a.access_scope }}</td>
+                    <td><span class="badge badge-{% if a.is_active %}active{% else %}inactive{% endif %}">{{ a.get_status_display }}</span></td>
+                    <td><a href="{% url 'roles:management_detail' pk=a.pk %}" class="btn btn-warning btn-sm">مشاهده</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">{% include "components/empty_state.html" with empty_message="این فرد هنوز هیچ نقشی ندارد." %}</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% else %}
+    <h1>مدیریت تخصیص نقش‌ها</h1>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>کاربر</th><th>نقش</th><th>محدوده</th><th>وضعیت</th><th></th></tr>
+            {% for a in assignments %}
+            <tr>
+                <td>{{ a.user.get_full_name|default:a.user.username }}</td>
+                <td>{{ a.role.name }}</td>
+                <td>{{ a.access_scope }}</td>
+                <td><span class="badge badge-{% if a.is_active %}active{% else %}inactive{% endif %}">{{ a.get_status_display }}</span></td>
+                <td><a href="{% url 'roles:management_detail' pk=a.pk %}" class="btn btn-warning btn-sm">مشاهده</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">{% include "components/empty_state.html" with empty_message="تخصیصی در محدوده‌ی دسترسی شما یافت نشد." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>جزئیات تخصیص نقش</h1>
+<div class="card">
+    <p>کاربر: {{ assignment.user.get_full_name|default:assignment.user.username }}</p>
+    <p>نقش: {{ assignment.role.name }}</p>
+    <p>محدوده: {{ assignment.access_scope }}</p>
+    <p>وضعیت: <span class="badge badge-{% if assignment.is_active %}active{% else %}inactive{% endif %}">{{ assignment.get_status_display }}</span></p>
+
+    <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+        {% if assignment.status == "proposed" %}
+            <form method="post" action="{% url 'roles:submit' pk=assignment.pk %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">ارسال برای بررسی</button></form>
+            <a href="{% url 'roles:cancel' pk=assignment.pk %}" class="btn btn-danger">لغو پیشنهاد</a>
+        {% endif %}
+        {% if assignment.status == "pending_approval" %}
+            <form method="post" action="{% url 'roles:approve' pk=assignment.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">تأیید و فعال‌سازی</button></form>
+            <a href="{% url 'roles:reject' pk=assignment.pk %}" class="btn btn-danger">رد</a>
+            <a href="{% url 'roles:cancel' pk=assignment.pk %}" class="btn btn-secondary">لغو</a>
+        {% endif %}
+        {% if assignment.status == "active" %}
+            <a href="{% url 'roles:suspend' pk=assignment.pk %}" class="btn btn-secondary">تعلیق</a>
+            <form method="post" action="{% url 'roles:end' pk=assignment.pk %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">پایان‌دادن</button></form>
+            <a href="{% url 'roles:revoke' pk=assignment.pk %}" class="btn btn-danger">لغو اجباری</a>
+        {% endif %}
+        {% if assignment.status == "suspended" %}
+            <a href="{% url 'roles:reactivate' pk=assignment.pk %}" class="btn btn-primary">فعال‌سازی مجدد</a>
+            <a href="{% url 'roles:revoke' pk=assignment.pk %}" class="btn btn-danger">لغو اجباری</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">تاریخچه</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>از</th><th>به</th><th>عامل</th><th>تاریخ</th><th>دلیل</th></tr>
+            {% for h in history %}
+            <tr>
+                <td>{{ h.get_previous_status_display }}</td>
+                <td>{{ h.get_new_status_display }}</td>
+                <td>{{ h.actor.get_full_name|default:h.actor.username }}</td>
+                <td>{{ h.created_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ h.reason|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>ایجاد فروم جدید</h1>
+<div class="card">
+    {% include "components/form_errors.html" %}
+    <form method="post" class="board-create-form">
+        {% csrf_token %}
+        {% for field in form %}
+            <div style="margin-bottom: var(--space-4);">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<span class="form-error-text">{{ field.errors.0 }}</span>{% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">ایجاد فروم</button>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+    function populateSelect(select, items, placeholder) {
+        select.innerHTML = "";
+        var empty = document.createElement("option");
+        empty.value = ""; empty.textContent = placeholder;
+        select.appendChild(empty);
+        items.forEach(function (item) {
+            var opt = document.createElement("option");
+            opt.value = item.id; opt.textContent = item.name;
+            select.appendChild(opt);
+        });
+    }
+
+    var levelSelect = document.getElementById("id_level");
+    var provinceSelect = document.getElementById("id_province");
+    var countySelect = document.getElementById("id_county");
+    var networkSelect = document.getElementById("id_network");
+    var centerSelect = document.getElementById("id_center");
+
+    var rows = {
+        county: countySelect.closest("div"),
+        network: networkSelect.closest("div"),
+        center: centerSelect.closest("div"),
+    };
+
+    function updateVisibility() {
+        var level = levelSelect.value;
+        var order = ["county", "network", "center"];
+        var levelIndex = {"province": 0, "county": 1, "network": 2, "center": 3}[level];
+        order.forEach(function (key, idx) {
+            rows[key].style.display = (idx + 1 <= levelIndex) ? "block" : "none";
+        });
+    }
+
+    levelSelect.addEventListener("change", updateVisibility);
+    updateVisibility();
+
+    provinceSelect.addEventListener("change", function () {
+        populateSelect(countySelect, [], "ابتدا استان را انتخاب کنید");
+        populateSelect(networkSelect, [], "ابتدا شهرستان را انتخاب کنید");
+        populateSelect(centerSelect, [], "ابتدا شبکه را انتخاب کنید");
+        if (!provinceSelect.value) return;
+        fetch("/api/organization/counties/?province=" + provinceSelect.value)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { populateSelect(countySelect, data.results, "شهرستان را انتخاب کنید"); });
+    });
+
+    countySelect.addEventListener("change", function () {
+        populateSelect(networkSelect, [], "ابتدا شهرستان را انتخاب کنید");
+        populateSelect(centerSelect, [], "ابتدا شبکه را انتخاب کنید");
+        if (!countySelect.value) return;
+        fetch("/api/organization/networks/?county=" + countySelect.value)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { populateSelect(networkSelect, data.results, "شبکه را انتخاب کنید"); });
+    });
+
+    networkSelect.addEventListener("change", function () {
+        populateSelect(centerSelect, [], "ابتدا شبکه را انتخاب کنید");
+        if (!networkSelect.value) return;
+        fetch("/api/organization/centers/?network=" + networkSelect.value)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { populateSelect(centerSelect, data.results, "مرکز را انتخاب کنید"); });
+    });
+})();
+</script>
+{% endblock %}

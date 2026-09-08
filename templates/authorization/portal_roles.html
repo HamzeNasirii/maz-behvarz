@@ -1,0 +1,31 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+    <h1>نقش‌های من</h1>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr>
+                <th>نقش</th>
+                <th>محدوده</th>
+                <th>از تاریخ</th>
+                <th>تا تاریخ</th>
+                <th>وضعیت</th>
+            </tr>
+            {% for a in assignments %}
+                <tr>
+                    <td>{{ a.role.name }}</td>
+                    <td>{{ a.access_scope }}</td>
+                    <td>{{ a.start_date|jalali }}</td>
+                    <td>{{ a.end_date|jalali|default:"تاکنون" }}</td>
+                    <td><span
+                            class="badge badge-{% if a.is_active %}active{% else %}inactive{% endif %}">{{ a.get_status_display }}</span>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">{% include "components/empty_state.html" with empty_message="نقشی برای شما ثبت نشده است." %}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base/auth.html" %}
+{% block content %}
+    <div class="card">
+        <h1>ورود به پنل عضویت</h1>
+        {% include "components/form_errors.html" %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="required" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label class="required" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                {{ form.password }}
+            </div>
+            <button type="submit" class="btn btn-primary">ورود</button>
+        </form>
+        {% if form.errors %}
+            <p class="form-error-text">نام کاربری یا رمز عبور اشتباه است.</p>
+        {% endif %}
+        <p style="text-align:center; margin-top: var(--space-4);">
+            <a href="{% url 'accounts:bale_reset_request' %}">رمز عبور خود را فراموش کرده‌اید؟</a>
+        </p>
+    </div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% load forum_extras %}
+{% block content %}
+    <article class="card">
+        <h1>{{ post.title }}</h1>
+        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">{{ post.author.get_full_name|default:post.author.username }}
+            — {{ post.created_at|jalali }} {{ post.created_at|date:"H:i" }}</p>
+        <div>{{ post.content|linebreaks }}</div>
+        <div style="display:flex; gap: var(--space-2); align-items:center; margin-top: var(--space-3);">
+            <form method="post" action="{% url 'forums:react' target_type='post' pk=post.pk %}">
+                <input type="hidden" name="reaction_type" value="like">{% csrf_token %}
+                <button class="btn btn-sm {% if post_reactions.user_reaction == 'like' %}btn-primary{% else %}btn-secondary{% endif %}"
+                        type="submit">👍 {{ post_reactions.like_count }}</button>
+            </form>
+            <form method="post" action="{% url 'forums:react' target_type='post' pk=post.pk %}">
+                <input type="hidden" name="reaction_type" value="dislike">{% csrf_token %}
+                <button class="btn btn-sm {% if post_reactions.user_reaction == 'dislike' %}btn-danger{% else %}btn-secondary{% endif %}"
+                        type="submit">👎 {{ post_reactions.dislike_count }}</button>
+            </form>
+            {% if can_moderate %}
+                <form method="post" action="{% url 'forums:post_delete' pk=post.pk %}">{% csrf_token %}
+                    <button class="btn btn-danger btn-sm" type="submit">حذف پست</button>
+                </form>
+            {% endif %}
+        </div>
+    </article>
+
+    <div class="card">
+        <h2 class="card__title">کامنت‌ها</h2>
+        {% for comment in comments %}
+            {% reaction_summary request.user comment as comment_reactions %}
+            <div style="padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border);">
+                <p>{{ comment.content }}</p>
+                <div style="display:flex; align-items:center; gap: var(--space-2); flex-wrap:wrap; margin-top: var(--space-2);">
+            <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                {{ comment.author.get_full_name|default:comment.author.username }} —
+                {{ comment.created_at|jalali }} {{ comment.created_at|date:"H:i" }}
+            </span>
+                    <form method="post" action="{% url 'forums:react' target_type='comment' pk=comment.pk %}">
+                        <input type="hidden" name="reaction_type" value="like">{% csrf_token %}
+                        <button class="btn btn-sm {% if comment_reactions.user_reaction == 'like' %}btn-primary{% else %}btn-secondary{% endif %}"
+                                type="submit" style="padding: 2px 8px;">👍 {{ comment_reactions.like_count }}</button>
+                    </form>
+                    <form method="post" action="{% url 'forums:react' target_type='comment' pk=comment.pk %}">
+                        <input type="hidden" name="reaction_type" value="dislike">{% csrf_token %}
+                        <button class="btn btn-sm {% if comment_reactions.user_reaction == 'dislike' %}btn-danger{% else %}btn-secondary{% endif %}"
+                                type="submit" style="padding: 2px 8px;">👎 {{ comment_reactions.dislike_count }}</button>
+                    </form>
+                    <button type="button" class="btn-link js-reply-toggle" data-comment-id="{{ comment.pk }}">پاسخ
+                    </button>
+                    {% if can_moderate %}
+                        <form method="post" action="{% url 'forums:comment_delete' pk=comment.pk %}">{% csrf_token %}
+                            <button class="btn-link-danger" type="submit">حذف</button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div id="reply-form-{{ comment.pk }}" class="reply-form-box"
+                     style="display:none; margin-top: var(--space-3);">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="parent_id" value="{{ comment.pk }}">
+                        {{ comment_form.content }}
+                        <button type="submit" class="btn btn-primary btn-sm" style="margin-top: var(--space-2);">ارسال
+                            پاسخ
+                        </button>
+                    </form>
+                </div>
+
+                {% for reply in comment.replies.all %}
+                    {% if not reply.is_deleted %}
+                        {% reaction_summary request.user reply as reply_reactions %}
+                        <div style="margin-right: var(--space-6); margin-top: var(--space-3); padding-right: var(--space-3); border-right: 2px solid var(--color-border);">
+                            <p>{{ reply.content }}</p>
+                            <div style="display:flex; align-items:center; gap: var(--space-2); flex-wrap:wrap; margin-top: var(--space-2);">
+                    <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                        {{ reply.author.get_full_name|default:reply.author.username }} —
+                        {{ reply.created_at|jalali }} {{ reply.created_at|date:"H:i" }}
+                    </span>
+                                <form method="post" action="{% url 'forums:react' target_type='comment' pk=reply.pk %}">
+                                    <input type="hidden" name="reaction_type" value="like">{% csrf_token %}
+                                    <button class="btn btn-sm {% if reply_reactions.user_reaction == 'like' %}btn-primary{% else %}btn-secondary{% endif %}"
+                                            type="submit" style="padding: 2px 8px;">
+                                        👍 {{ reply_reactions.like_count }}</button>
+                                </form>
+                                <form method="post" action="{% url 'forums:react' target_type='comment' pk=reply.pk %}">
+                                    <input type="hidden" name="reaction_type" value="dislike">{% csrf_token %}
+                                    <button class="btn btn-sm {% if reply_reactions.user_reaction == 'dislike' %}btn-danger{% else %}btn-secondary{% endif %}"
+                                            type="submit" style="padding: 2px 8px;">
+                                        👎 {{ reply_reactions.dislike_count }}</button>
+                                </form>
+                                {% if can_moderate %}
+                                    <form method="post"
+                                          action="{% url 'forums:comment_delete' pk=reply.pk %}">{% csrf_token %}
+                                        <button class="btn-link-danger" type="submit">حذف</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% empty %}
+            {% include "components/empty_state.html" with empty_message="کامنتی ثبت نشده است." %}
+        {% endfor %}
+
+        <form method="post" style="margin-top: var(--space-4);" class="board-create-form">
+            {% csrf_token %}
+            {{ comment_form.content }}
+            {% if comment_form.errors %}
+                <span class="form-error-text">{{ comment_form.content.errors.0 }}</span>{% endif %}
+            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-2);">ارسال کامنت جدید</button>
+        </form>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        document.querySelectorAll(".js-reply-toggle").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var box = document.getElementById("reply-form-" + btn.dataset.commentId);
+                box.style.display = box.style.display === "none" ? "block" : "none";
+            });
+        });
+    </script>
+{% endblock %}

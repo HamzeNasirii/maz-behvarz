@@ -1,0 +1,12 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>ایجاد دوره‌ی جدید هیئت‌مدیره</h1>
+<div class="card">
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">ایجاد</button>
+    </form>
+</div>
+{% endblock %}

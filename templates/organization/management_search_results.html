@@ -1,0 +1,18 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>نتایج جستجو برای «{{ query }}»</h1>
+<a href="{% url 'org_mgmt:tree' %}" class="btn btn-secondary">بازگشت به فهرست استان‌ها</a>
+<div class="card" style="margin-top: var(--space-4);">
+    <ul class="org-simple-list">
+        {% for item in results %}
+        <li class="org-simple-list__row">
+            <span class="org-tree__status-dot {% if item.is_active %}is-active{% else %}is-inactive{% endif %}"></span>
+            <a href="{% url 'org_mgmt:detail' level=item.level pk=item.pk %}" class="org-simple-list__name">{{ item.name }}</a>
+            <span class="badge" style="background: var(--color-bg); color: var(--color-text-muted);">{{ item.level_label }}</span>
+        </li>
+        {% empty %}
+        <li>{% include "components/empty_state.html" with empty_message="نتیجه‌ای یافت نشد." %}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

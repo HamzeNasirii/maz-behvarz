@@ -1,0 +1,257 @@
+{% extends "website/base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/content-form.css' %}">
+    <link rel="stylesheet" href="{% static 'css/document-upload.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="content-form-header">
+        <h1>درخواست عضویت</h1>
+    </div>
+
+    <div class="card content-form-card" style="max-width: 900px;">
+        <form method="post" id="membership-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% include "components/form_errors.html" %}
+
+            <div style="display:flex; gap: var(--space-4); flex-wrap: wrap;">
+                <div class="content-form-field" style="flex:1; min-width:150px;">
+                    <label for="{{ form.first_name.id_for_label }}" class="content-form-field__label">نام <span
+                            class="content-form-field__required">*</span></label>
+                    {{ form.first_name }}
+                </div>
+                <div class="content-form-field" style="flex:1; min-width:150px;">
+                    <label for="{{ form.last_name.id_for_label }}" class="content-form-field__label">نام خانوادگی <span
+                            class="content-form-field__required">*</span></label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+
+            <div class="content-form-field">
+                <label for="{{ form.national_code.id_for_label }}" class="content-form-field__label">کد ملی <span
+                        class="content-form-field__required">*</span></label>
+                {{ form.national_code }}
+                {% if form.national_code.errors %}
+                    <p class="content-form-field__error">{{ form.national_code.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="content-form-field">
+                <label for="{{ form.mobile_number.id_for_label }}" class="content-form-field__label">شماره موبایل <span
+                        class="content-form-field__required">*</span></label>
+                {{ form.mobile_number }}
+                {% if form.mobile_number.errors %}
+                    <p class="content-form-field__error">{{ form.mobile_number.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="content-form-field">
+                <label for="{{ form.province.id_for_label }}" class="content-form-field__label">استان</label>
+                {{ form.province }}
+            </div>
+            <div class="content-form-field">
+                <label for="{{ form.county.id_for_label }}" class="content-form-field__label">شهرستان</label>
+                {{ form.county }}
+            </div>
+            <div class="content-form-field">
+                <label for="{{ form.network.id_for_label }}" class="content-form-field__label">شبکه بهداشت و
+                    درمان</label>
+                {{ form.network }}
+            </div>
+            <div class="content-form-field">
+                <label for="{{ form.center.id_for_label }}" class="content-form-field__label">مرکز خدمات جامع
+                    سلامت</label>
+                {{ form.center }}
+            </div>
+            <div class="content-form-field">
+                <label for="{{ form.health_house.id_for_label }}" class="content-form-field__label">خانه بهداشت</label>
+                {{ form.health_house }}
+            </div>
+
+            <div class="content-form-field">
+                <label class="content-form-field__label">{{ form.legal_decree_file.label }}</label>
+                <div class="custom-file-picker">
+                    <button type="button" class="btn btn-secondary custom-file-picker__btn"
+                            data-target="{{ form.legal_decree_file.id_for_label }}">انتخاب فایل
+                    </button>
+                    <span class="custom-file-picker__filename"
+                          data-filename-for="{{ form.legal_decree_file.id_for_label }}">فایلی انتخاب نشده است</span>
+                    {{ form.legal_decree_file }}
+                </div>
+                {% if form.legal_decree_file.errors %}
+                    <p class="content-form-field__error">{{ form.legal_decree_file.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="content-form-field">
+                <label class="content-form-field__label">{{ form.network_letter_file.label }}</label>
+                <div class="custom-file-picker">
+                    <button type="button" class="btn btn-secondary custom-file-picker__btn"
+                            data-target="{{ form.network_letter_file.id_for_label }}">انتخاب فایل
+                    </button>
+                    <span class="custom-file-picker__filename"
+                          data-filename-for="{{ form.network_letter_file.id_for_label }}">فایلی انتخاب نشده است</span>
+                    {{ form.network_letter_file }}
+                </div>
+                {% if form.network_letter_file.errors %}
+                    <p class="content-form-field__error">{{ form.network_letter_file.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="card card--highlight">
+                <p>{{ terms_text }}</p>
+                <label class="content-form-field__checkbox-label">{{ form.accepted_terms }} تعهدنامه‌ی بالا را
+                    می‌پذیرم</label>
+            </div>
+
+            {{ form.non_field_errors }}
+            <div class="content-form-actions">
+                <button type="submit" class="btn btn-primary">ارسال درخواست</button>
+            </div>
+        </form>
+
+        <div class="card card--highlight" style="margin-top: var(--space-4);">
+            <p>برای اخذ مدارک از شبکه بهداشت محل خدمت خود، ابتدا فیلدهای «نام»، «نام خانوادگی»، «کد ملی» و «خانه بهداشت»
+                بالا را پر کنید، سپس روی دکمه‌ی زیر کلیک کنید تا نامه‌ی مخصوص شما برای چاپ/دریافت PDF باز شود.</p>
+            <button type="button" id="open-letter-btn" class="btn btn-secondary">دریافت نامه‌ی درخواست مدارک</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("open-letter-btn").addEventListener("click", function () {
+            var firstName = document.getElementById("id_first_name").value.trim();
+            var lastName = document.getElementById("id_last_name").value.trim();
+            var nationalCode = document.getElementById("id_national_code").value.trim();
+            var healthHouse = document.getElementById("id_health_house").value;
+
+            if (!firstName || !lastName || !nationalCode || !healthHouse) {
+                alert("لطفاً ابتدا نام، نام خانوادگی، کد ملی و خانه بهداشت را انتخاب کنید.");
+                return;
+            }
+
+            var params = new URLSearchParams({
+                full_name: (firstName + " " + lastName).trim(), national_code: nationalCode, health_house: healthHouse,
+            });
+            window.open("{% url 'website:membership_letter' %}?" + params.toString(), "_blank");
+        });
+    </script>
+
+    <script>
+        // محدودیت ورودی: فقط عدد در کد ملی و شماره موبایل
+        ["id_national_code", "id_mobile_number"].forEach(function (id) {
+            var input = document.getElementById(id);
+            if (!input) return;
+            input.addEventListener("keypress", function (e) {
+                if (!/[0-9]/.test(e.key)) e.preventDefault();
+            });
+            input.addEventListener("input", function () {
+                input.value = input.value.replace(/[^\d]/g, "");
+            });
+        });
+    </script>
+
+    <script>
+        function populateSelect(select, items, placeholder) {
+            select.innerHTML = "";
+            var emptyOption = document.createElement("option");
+            emptyOption.value = "";
+            emptyOption.textContent = placeholder;
+            select.appendChild(emptyOption);
+            items.forEach(function (item) {
+                var option = document.createElement("option");
+                option.value = item.id;
+                option.textContent = item.name;
+                select.appendChild(option);
+            });
+            select.disabled = items.length === 0;
+        }
+
+        function resetSelect(select, placeholder) {
+            populateSelect(select, [], placeholder);
+            select.disabled = true;
+        }
+
+        var provinceSelect = document.getElementById("id_province");
+        var countySelect = document.getElementById("id_county");
+        var networkSelect = document.getElementById("id_network");
+        var centerSelect = document.getElementById("id_center");
+        var houseSelect = document.getElementById("id_health_house");
+
+        resetSelect(countySelect, "ابتدا استان را انتخاب کنید");
+        resetSelect(networkSelect, "ابتدا شهرستان را انتخاب کنید");
+        resetSelect(centerSelect, "ابتدا شبکه را انتخاب کنید");
+        resetSelect(houseSelect, "ابتدا مرکز را انتخاب کنید");
+
+        provinceSelect.addEventListener("change", function () {
+            resetSelect(networkSelect, "ابتدا شهرستان را انتخاب کنید");
+            resetSelect(centerSelect, "ابتدا شبکه را انتخاب کنید");
+            resetSelect(houseSelect, "ابتدا مرکز را انتخاب کنید");
+            if (!provinceSelect.value) {
+                resetSelect(countySelect, "ابتدا استان را انتخاب کنید");
+                return;
+            }
+            fetch("/api/organization/counties/?province=" + provinceSelect.value)
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    populateSelect(countySelect, data.results, "شهرستان را انتخاب کنید");
+                });
+        });
+
+        countySelect.addEventListener("change", function () {
+            resetSelect(centerSelect, "ابتدا شبکه را انتخاب کنید");
+            resetSelect(houseSelect, "ابتدا مرکز را انتخاب کنید");
+            if (!countySelect.value) {
+                resetSelect(networkSelect, "ابتدا شهرستان را انتخاب کنید");
+                return;
+            }
+            fetch("/api/organization/networks/?county=" + countySelect.value)
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    populateSelect(networkSelect, data.results, "شبکه را انتخاب کنید");
+                });
+        });
+
+        networkSelect.addEventListener("change", function () {
+            resetSelect(houseSelect, "ابتدا مرکز را انتخاب کنید");
+            if (!networkSelect.value) {
+                resetSelect(centerSelect, "ابتدا شبکه را انتخاب کنید");
+                return;
+            }
+            fetch("/api/organization/centers/?network=" + networkSelect.value)
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    populateSelect(centerSelect, data.results, "مرکز را انتخاب کنید");
+                });
+        });
+
+        centerSelect.addEventListener("change", function () {
+            if (!centerSelect.value) {
+                resetSelect(houseSelect, "ابتدا مرکز را انتخاب کنید");
+                return;
+            }
+            fetch("/api/organization/houses/?center=" + centerSelect.value)
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    populateSelect(houseSelect, data.results, "خانه بهداشت را انتخاب کنید");
+                });
+        });
+    </script>
+    <script>
+        document.querySelectorAll(".custom-file-picker__btn").forEach(function (btn) {
+            var targetId = btn.dataset.target;
+            var input = document.getElementById(targetId);
+            if (!input) return;
+            var filenameSpan = document.querySelector('[data-filename-for="' + targetId + '"]');
+
+            btn.addEventListener("click", function () {
+                input.click();
+            });
+            input.addEventListener("change", function () {
+                if (input.files.length) filenameSpan.textContent = input.files[0].name;
+            });
+        });
+    </script>
+{% endblock %}

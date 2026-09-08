@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نامه‌ی درخواست مدارک — {{ full_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <style>
+        body {
+            font-family: "Vazirmatn", Tahoma, sans-serif;
+            padding: 2cm;
+            max-width: 21cm;
+            margin: 0 auto;
+            line-height: 2;
+        }
+
+        .letter-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: var(--space-2);
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .letter-header img {
+            width: 90px;
+            height: 90px;
+        }
+
+        .letter-header h1 {
+            font-size: var(--font-size-lg);
+            margin: 0;
+            color: var(--color-primary-dark);
+        }
+
+        .letter-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--space-6);
+        }
+
+        .letter-body p {
+            margin: var(--space-3) 0;
+        }
+
+        .letter-list {
+            margin: var(--space-3) 0;
+            padding-right: var(--space-6);
+        }
+
+        .letter-signature {
+            margin-top: var(--space-8);
+            text-align: left;
+        }
+
+        .print-toolbar {
+            text-align: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .print-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-lg);
+            font-family: inherit;
+            font-size: var(--font-size-base);
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        .print-btn:hover {
+            background: var(--color-primary-light);
+            transform: translateY(-1px);
+        }
+
+        .print-btn:active {
+            transform: translateY(0);
+        }
+
+        @media print {
+            .print-toolbar {
+                display: none;
+            }
+
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="print-toolbar">
+    <button onclick="window.print()" class="print-btn">🖨️ چاپ / ذخیره به‌صورت PDF</button>
+</div>
+
+<div class="letter-header">
+    <img src="{% static 'img/association-logo.png' %}" alt="لوگوی انجمن">
+    <h1>انجمن صنفی بهورزان استان مازندران</h1>
+    <p style="margin:0;text-align: center; color: var(--color-text-muted); font-size: var(--font-size-sm);">به نام
+        خدا</p>
+</div>
+
+<div class="letter-meta">
+    <span>تاریخ: {{ jalali_date }}</span>
+    <span>شماره: —</span>
+    <span>پیوست: ندارد</span>
+</div>
+
+<div class="letter-body">
+    <p><strong>ریاست محترم {{ network_name|default:"شبکه بهداشت و درمان شهرستان ........................" }}</strong>
+    </p>
+    <p>با عرض سلام و احترام</p>
+    <p>
+        اینجانب <strong>{{ full_name|default:".................................." }}</strong>
+        بهورز شاغل در <strong>{{ health_house.name|default:"................................" }}</strong>
+        به شماره ملی <strong>{{ national_code|default:"......................................." }}</strong>
+        جهت عضویت در انجمن صنفی بهورزان استان مازندران،
+    </p>
+    <p>درخواست صدور مدارک ذیل را دارم:</p>
+    <ul class="letter-list">
+        <li>کپی برابر اصل گواهی پایان دوره بهورزی</li>
+        <li>نامه اشتغال به کار بهورزی</li>
+        <li>آخرین حکم</li>
+    </ul>
+    <p>لذا خواهشمند است دستور فرمایید مدارک مذکور صادر و در اختیار اینجانب قرار گیرد.</p>
+    <p>پیشاپیش از همکاری و حسن توجه جنابعالی کمال تشکر و امتنان را داریم.</p>
+</div>
+
+<div class="letter-signature">
+    <p style="margin:0;text-align: center;">با احترام</p>
+    <p style="margin:0;text-align: center;">نام و نام خانوادگی: {{ full_name }}</p>
+</div>
+</body>
+</html>

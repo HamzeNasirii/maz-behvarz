@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>درخواست‌های در انتظار تأیید</h1>
+<ul>
+    <li>
+        <a href="/admin/website/membershipapplication/?status__exact=pending">
+            درخواست‌های عضویت جدید: {{ pending_applications }}
+        </a>
+    </li>
+    <li>
+        <a href="/admin/members/member/?approval_status__exact=pending">
+            اعضای در انتظار تأیید: {{ pending_members }}
+        </a>
+    </li>
+    <li>
+        <a href="/admin/employment/employmentassignment/?approval_status__exact=pending">
+            جابه‌جایی‌های محل خدمت در انتظار تأیید: {{ pending_employment }}
+        </a>
+    </li>
+    <li>
+        <a href="/admin/authorization/roleassignment/?approval_status__exact=pending">
+            تخصیص‌های نقش در انتظار تأیید: {{ pending_roles }}
+        </a>
+    </li>
+</ul>
+{% endblock %}

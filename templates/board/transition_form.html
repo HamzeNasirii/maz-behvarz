@@ -1,0 +1,13 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>تغییر وضعیت دوره</h1>
+<div class="card">
+    <p>{{ board.name }}</p>
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">تأیید</button>
+    </form>
+</div>
+{% endblock %}

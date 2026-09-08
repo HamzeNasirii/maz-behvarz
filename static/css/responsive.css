@@ -1,0 +1,51 @@
+/* Breakpoints: Mobile (<576) / Tablet (576-991) / Desktop (992-1199) / Large (>=1200) */
+
+@media (max-width: 991px) {
+    .site-nav__toggle {
+        display: inline-block;
+    }
+
+    .site-nav__links {
+        display: none;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        margin-top: var(--space-3);
+    }
+
+    .site-nav__links.is-open {
+        display: flex;
+    }
+
+    .dashboard__topbar-toggle {
+        display: inline-block;
+    }
+
+    .dashboard__sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        z-index: 100;
+        transform: translateX(100%);
+        box-shadow: var(--shadow-md);
+    }
+
+    .dashboard__sidebar.is-open {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 575px) {
+    .site-main {
+        padding: 0 var(--space-3);
+    }
+
+    .dashboard__content {
+        padding: var(--space-3);
+    }
+
+    .card {
+        padding: var(--space-4);
+    }
+}

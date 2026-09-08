@@ -1,0 +1,39 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/content-form.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="content-form-header">
+        <h1>ایجاد درخواست جدید</h1>
+        <a href="{% url 'requests_portal:list' %}" class="btn btn-secondary">بازگشت به فهرست</a>
+    </div>
+
+    <div class="card content-form-card">
+        {% include "components/form_errors.html" %}
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="content-form-field">
+                    <label for="{{ field.id_for_label }}" class="content-form-field__label">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="content-form-field__required">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="content-form-field__help">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <p class="content-form-field__error">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="content-form-actions">
+                <button type="submit" class="btn btn-primary">ثبت درخواست</button>
+                <a href="{% url 'requests_portal:list' %}" class="btn btn-secondary">انصراف</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}
