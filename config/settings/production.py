@@ -30,7 +30,7 @@ SECURE_HSTS_PRELOAD = True
 MIDDLEWARE = MIDDLEWARE.copy()
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / "collected_static"
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
