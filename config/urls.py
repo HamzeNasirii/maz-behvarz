@@ -39,7 +39,7 @@ sitemaps = {
     "announcements": AnnouncementSitemap,
     "events": EventSitemap,
     "regulations": RegulationSitemap,
-    "static": StaticViewSitemap,
+    "static_src": StaticViewSitemap,
 }
 
 urlpatterns = [

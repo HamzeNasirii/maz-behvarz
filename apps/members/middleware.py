@@ -21,6 +21,6 @@ class ForcePasswordChangeMiddleware:
         user = getattr(request, "user", None)
         if user and user.is_authenticated and getattr(user, "must_change_password", False):
             exempt_urls = {reverse(name) for name in self.EXEMPT_PATHS}
-            if request.path not in exempt_urls and not request.path.startswith("/static/") and not request.path.startswith("/media/"):
+            if request.path not in exempt_urls and not request.path.startswith("/static_src/") and not request.path.startswith("/media/"):
                 return redirect("members_portal:forced_password_change")
         return self.get_response(request)
