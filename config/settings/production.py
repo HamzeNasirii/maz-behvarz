@@ -39,3 +39,21 @@ STORAGES = {
 
 # TODO: SMTP واقعی در فاز بعدی که Notification Engine کامل می‌شود تنظیم شود.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
+}
+
