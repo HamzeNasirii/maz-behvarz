@@ -1,0 +1,25 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>پیشنهادهای حذف عضو</h1>
+<div class="table-wrapper">
+    <table class="data-table">
+        <tr><th>عضو</th><th>دلیل</th><th>پیشنهاددهنده</th><th>وضعیت</th><th></th></tr>
+        {% for p in proposals %}
+        <tr>
+            <td>{{ p.member.user.get_full_name|default:p.member.user.username }}</td>
+            <td>{{ p.get_reason_display }}</td>
+            <td>{{ p.proposed_by.get_full_name|default:p.proposed_by.username }}</td>
+            <td><span class="badge badge-{% if p.status == "approved" %}inactive{% elif p.status == "rejected" %}active{% else %}pending{% endif %}">{{ p.get_status_display }}</span></td>
+            <td>
+                {% if p.status == "pending" and can_decide %}
+                    <a href="{% url 'members_portal:removal_approve' pk=p.pk %}" class="btn btn-danger btn-sm">تأیید</a>
+                    <a href="{% url 'members_portal:removal_reject' pk=p.pk %}" class="btn btn-secondary btn-sm">رد</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">{% include "components/empty_state.html" with empty_message="پیشنهادی ثبت نشده است." %}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

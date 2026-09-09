@@ -1,0 +1,33 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>وضعیت عضویت</h1>
+{% if member %}
+<div class="card">
+    <p>وضعیت فعلی: <span class="badge badge-{{ member.status }}">{{ member.get_status_display }}</span></p>
+    <p>شماره عضویت: {{ member.membership_number|default:"—" }}</p>
+</div>
+<div class="card">
+    <h2 class="card__title">تاریخچه‌ی تغییر وضعیت</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>از</th><th>به</th><th>تاریخ</th><th>دلیل</th></tr>
+            {% for h in history %}
+            <tr>
+                <td>{{ h.get_previous_status_display }}</td>
+                <td>{{ h.get_new_status_display }}</td>
+                <td>{{ h.created_at|date:"Y-m-d" }}</td>
+                <td>{{ h.reason|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p>شما هنوز پروفایل عضویتی ندارید.</p>
+    <a href="{% url 'members_portal:membership_apply' %}" class="btn btn-primary">ثبت درخواست عضویت</a>
+</div>
+{% endif %}
+{% endblock %}

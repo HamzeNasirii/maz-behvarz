@@ -1,0 +1,22 @@
+{% extends "website/base.html" %}
+{% block content %}
+<h1>اسناد عمومی</h1>
+<div class="card">
+    {% for document in page_obj %}
+        <div style="margin-bottom: var(--space-4); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border);">
+            <h3>{{ document.title }}</h3>
+            {% if document.category %}<p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">دسته: {{ document.category.name }}</p>{% endif %}
+            <p>{{ document.description }}</p>
+            <div style="display:flex; gap: var(--space-2); flex-wrap: wrap;">
+                <a href="{{ document.file.url }}" class="btn btn-secondary" target="_blank" rel="noopener">دانلود فایل اصلی</a>
+                {% for att in document.attachments.all %}
+                    <a href="{{ att.file.url }}" class="btn btn-secondary" target="_blank" rel="noopener">دانلود {{ att.title|default:"فایل پیوست" }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="در حال حاضر سندی برای نمایش وجود ندارد." %}
+    {% endfor %}
+</div>
+{% include "components/pagination.html" with page_obj=page_obj %}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>{{ document.title }}</h1>
+<div class="card">
+    <p>وضعیت: <span class="badge badge-{% if document.status == "published" %}active{% else %}inactive{% endif %}">{{ document.get_status_display }}</span></p>
+    <p>سطح دسترسی: {{ document.get_visibility_display }}</p>
+    <p>حجم فایل: {{ document.file_size }} بایت</p>
+    <p>Checksum: <code>{{ document.checksum|truncatechars:24 }}</code></p>
+    <a href="{% url 'documents_mgmt:download' pk=document.pk %}" class="btn btn-secondary">دانلود</a>
+
+    <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+        {% if document.status == "draft" %}
+            <form method="post" action="{% url 'documents_mgmt:submit_review' pk=document.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">ارسال برای بررسی</button></form>
+        {% endif %}
+        {% if document.status == "review" %}
+            <form method="post" action="{% url 'documents_mgmt:approve' pk=document.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">تأیید</button></form>
+            <a href="{% url 'documents_mgmt:reject' pk=document.pk %}" class="btn btn-danger">رد</a>
+        {% endif %}
+        {% if document.status == "approved" %}
+            <form method="post" action="{% url 'documents_mgmt:publish' pk=document.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">انتشار</button></form>
+        {% endif %}
+        {% if document.status == "published" %}
+            <form method="post" action="{% url 'documents_mgmt:archive' pk=document.pk %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">بایگانی</button></form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">تاریخچه‌ی وضعیت</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>از</th><th>به</th><th>عامل</th><th>تاریخ</th><th>دلیل</th></tr>
+            {% for h in history %}
+            <tr>
+                <td>{{ h.get_previous_status_display }}</td>
+                <td>{{ h.get_new_status_display }}</td>
+                <td>{{ h.actor.get_full_name|default:h.actor.username }}</td>
+                <td>{{ h.created_at|date:"Y-m-d" }}</td>
+                <td>{{ h.reason|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

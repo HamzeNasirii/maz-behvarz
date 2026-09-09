@@ -1,0 +1,153 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+
+    <h1>پنل عضویت</h1>
+    <p>خوش آمدید، {{ user.get_full_name|default:user.username }}</p>
+
+    {% if member %}
+        <div class="card">
+            <h2 class="card__title">وضعیت عضویت</h2>
+            <p>وضعیت درخواست: <span
+                    class="badge badge-{{ member.approval_status }}">{{ member.get_approval_status_display }}</span></p>
+            {% if active_period %}
+                <p>عضویت فعال از تاریخ {{ active_period.start_date|jalali }}</p>
+            {% else %}
+                <p>در حال حاضر دوره‌ی عضویت فعالی ثبت نشده است.</p>
+            {% endif %}
+
+            <div style="display:flex; flex-direction:column; gap: var(--space-4); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border);">
+
+                <div style="display:flex; align-items:flex-start; gap: var(--space-3);">
+                    <div style="width:32px; height:32px; border-radius:50%; background: var(--color-success); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        ✓
+                    </div>
+                    <div>
+                        <strong>تأیید اولیه‌ی عضویت</strong>
+                        <p style="color: var(--color-text-muted); margin: var(--space-1) 0 0; font-size: var(--font-size-sm);">
+                            تکمیل‌شده — عضویت شما پذیرفته شده است.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:flex-start; gap: var(--space-3);">
+                    <div style="width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; background: {% if member.documents_verified_at %}var(--color-success){% else %}#f5a623{% endif %};">
+                        {% if member.documents_verified_at %}✓{% else %}۲{% endif %}
+                    </div>
+                    <div style="flex:1;">
+                        <strong>تأیید مدارک</strong>
+                        {% if member.documents_verified_at %}
+                            <p style="color: var(--color-success); margin: var(--space-1) 0 0; font-size: var(--font-size-sm);">
+                                تأیید شده در تاریخ {{ member.documents_verified_at|jalali }} — دسترسی سطح بهورز (شامل
+                                فروم‌ها) فعال است.
+                            </p>
+                        {% else %}
+                            <p style="color: var(--color-text-muted); margin: var(--space-1) 0 var(--space-2); font-size: var(--font-size-sm);">
+                                در انتظار بررسی و تأیید توسط دبیر، رئیس یا نایب‌رئیس انجمن — این کار توسط خود شما قابل
+                                انجام نیست.
+                            </p>
+                        {% endif %}
+
+                        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: var(--space-1);">
+                            <li>
+                                {% if member.legal_decree_file %}
+                                    <span style="color: var(--color-success);">✓</span>{% else %}
+                                    <span style="color: var(--color-danger);">✕</span>{% endif %}
+                                آخرین حکم کارگزینی
+                                {% if not member.legal_decree_file %}<a href="{% url 'members_portal:documents' %}"
+                                                                        style="font-size: var(--font-size-sm); margin-right: var(--space-2);">ارسال
+                                    کنید</a>{% endif %}
+                            </li>
+                            <li>
+                                {% if member.network_letter_file %}
+                                    <span style="color: var(--color-success);">✓</span>{% else %}
+                                    <span style="color: var(--color-danger);">✕</span>{% endif %}
+                                نامه‌ی اشتغال به کار ممهور شبکه بهداشت
+                                {% if not member.network_letter_file %}<a href="{% url 'members_portal:documents' %}"
+                                                                          style="font-size: var(--font-size-sm); margin-right: var(--space-2);">ارسال
+                                    کنید</a>{% endif %}
+                            </li>
+                            <li>
+                                {% if member.national_id_card_file %}
+                                    <span style="color: var(--color-success);">✓</span>{% else %}
+                                    <span style="color: var(--color-danger);">✕</span>{% endif %}
+                                تصویر کارت ملی
+                                {% if not member.national_id_card_file %}<a href="{% url 'members_portal:documents' %}"
+                                                                            style="font-size: var(--font-size-sm); margin-right: var(--space-2);">ارسال
+                                    کنید</a>{% endif %}
+                            </li>
+                            <li>
+                                {% if birth_certificate_pages %}
+                                    <div style="display:flex; flex-wrap:wrap; gap: var(--space-3); margin-bottom: var(--space-3);">
+                                        {% for page in birth_certificate_pages %}
+                                            <div style="position:relative; text-align:center;">
+                                                <img src="{{ page.image.url }}" alt=""
+                                                     style="width:120px; height:90px; object-fit:cover; border-radius: var(--radius-md); border:1px solid var(--color-border); display:block;">
+                                                <button type="button"
+                                                        class="profile-picture-wrapper__remove js-remove-birth-page"
+                                                        data-pk="{{ page.pk }}"
+                                                        style="position:absolute; top:4px; left:4px;">✕
+                                                </button>
+                                                <a href="{{ page.image.url }}" target="_blank"
+                                                   style="display:block; font-size: var(--font-size-sm); margin-top: var(--space-1);">مشاهده</a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:flex-start; gap: var(--space-3); opacity:0.5;">
+                    <div style="width:32px; height:32px; border-radius:50%; background: var(--color-border); color: var(--color-text-muted); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        ۳
+                    </div>
+                    <div>
+                        <strong>عضویت فعال (پرداخت حق عضویت)</strong>
+                        <p style="color: var(--color-text-muted); margin: var(--space-1) 0 0; font-size: var(--font-size-sm);">
+                            به‌زودی راه‌اندازی می‌شود.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <p>شما هنوز پروفایل عضویتی ندارید.</p>
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <h2 class="card__title">محل‌های خدمت فعلی</h2>
+        {% for employment in active_employments %}
+            <div style="margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border);">
+                <p>
+                    <strong>{{ employment.health_house.name }}</strong>
+                    {% if employment.is_primary %}<span class="badge badge-active">اصلی</span>{% endif %}
+                </p>
+                <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                    {{ employment.health_house.center.name }} —
+                    {{ employment.health_house.center.network.county.name }}،
+                    {{ employment.health_house.center.network.county.province.name }}
+                </p>
+            </div>
+        {% empty %}
+            {% include "components/empty_state.html" with empty_message="محل خدمت فعالی ثبت نشده است." %}
+        {% endfor %}
+        <a href="{% url 'members_portal:employment_history' %}">مشاهده‌ی تاریخچه‌ی کامل محل خدمت ←</a>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">نقش‌های فعال</h2>
+        {% for assignment in active_roles %}
+            <span class="badge badge-active" style="margin-left: var(--space-2);">{{ assignment.role.name }}</span>
+        {% empty %}
+            {% include "components/empty_state.html" with empty_message="نقش فعالی برای شما ثبت نشده است." %}
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">اعلان‌ها</h2>
+        {% include "components/empty_state.html" with empty_message="اعلانی برای نمایش وجود ندارد." %}
+    </div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>اتصال حساب بله</h1>
+<div class="card" style="max-width: 480px;">
+    {% if request.user.bale_chat_id %}
+        <p style="color: var(--color-success);">✅ حساب بله شما قبلاً متصل شده است.</p>
+    {% else %}
+        <ol style="padding-right: var(--space-5); line-height: 2;">
+                        <li>وارد بله شوید و ربات <a href="{{ bot_link }}" target="_blank">@{{ bot_username }}</a> را باز کنید.</li>
+            <li>این کد را برای ربات ارسال کنید:</li>
+        </ol>
+        <p style="font-size: 28px; font-weight: bold; text-align:center; letter-spacing: 4px; background: var(--color-bg); padding: var(--space-4); border-radius: var(--radius-md);">{{ code }}</p>
+        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm); text-align:center;">این کد تا ۱۰ دقیقه معتبر است.</p>
+    {% endif %}
+</div>
+{% endblock %}

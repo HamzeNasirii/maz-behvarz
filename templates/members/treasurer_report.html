@@ -1,0 +1,172 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block extra_css %}
+    <style>
+        .chart-card {
+            position: relative;
+            height: 320px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <h1>گزارش‌های مالی</h1>
+    <a href="{% url 'members_fees:list' %}" class="btn btn-secondary">بازگشت به فهرست حق‌عضویت‌ها</a>
+
+    <div class="card" style="margin-top: var(--space-4);">
+        <form method="get" class="board-create-form">
+            <div style="display:flex; gap: var(--space-3); flex-wrap: wrap; align-items:flex-end;">
+                <div style="flex:2; min-width:160px;">
+                    <label for="{{ filter_form.q.id_for_label }}">{{ filter_form.q.label }}</label>
+                    {{ filter_form.q }}
+                </div>
+                <div style="flex:1; min-width:120px;">
+                    <label for="{{ filter_form.payment_status.id_for_label }}">{{ filter_form.payment_status.label }}</label>
+                    {{ filter_form.payment_status }}
+                </div>
+                <div style="flex:1; min-width:120px;">
+                    <label>روش پرداخت</label>
+                    <select name="payment_method">
+                        <option value="">همه</option>
+                        <option value="cash" {% if request.GET.payment_method == "cash" %}selected{% endif %}>نقدی
+                        </option>
+                        <option value="bale" {% if request.GET.payment_method == "bale" %}selected{% endif %}>از طریق
+                            بله
+                        </option>
+                        <option value="card_to_card"
+                                {% if request.GET.payment_method == "card_to_card" %}selected{% endif %}>کارت به کارت
+                        </option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width:110px;">
+                    <label for="{{ filter_form.due_date_from.id_for_label }}">سررسید از</label>
+                    {{ filter_form.due_date_from }}
+                </div>
+                <div style="flex:1; min-width:110px;">
+                    <label for="{{ filter_form.due_date_to.id_for_label }}">سررسید تا</label>
+                    {{ filter_form.due_date_to }}
+                </div>
+                <div style="flex:1; min-width:110px;">
+                    <label for="{{ filter_form.payment_date_from.id_for_label }}">پرداخت از</label>
+                    {{ filter_form.payment_date_from }}
+                </div>
+                <div style="flex:1; min-width:110px;">
+                    <label for="{{ filter_form.payment_date_to.id_for_label }}">پرداخت تا</label>
+                    {{ filter_form.payment_date_to }}
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">اعمال فیلتر</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="summary-grid" style="margin-top: var(--space-4);">
+        <div class="card">
+            <p style="color: var(--color-text-muted); margin:0;">مجموع دریافتی</p>
+            <p style="font-size: var(--font-size-xl); color: var(--color-success); margin:0;">{{ summary.total_paid_amount|comma }}
+                ریال</p>
+            <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">{{ summary.total_paid_count }}
+                پرداخت</p>
+        </div>
+        <div class="card">
+            <p style="color: var(--color-text-muted); margin:0;">مجموع معوقات</p>
+            <p style="font-size: var(--font-size-xl); color: var(--color-danger); margin:0;">{{ summary.total_unpaid_amount|comma }}
+                ریال</p>
+            <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">{{ summary.total_unpaid_count }}
+                مورد</p>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4);">
+        <div class="card chart-card">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+        <div class="card chart-card">
+            <canvas id="methodChart"></canvas>
+        </div>
+        <div class="card chart-card">
+            <canvas id="statusChart"></canvas>
+        </div>
+        <div class="card chart-card">
+            <canvas id="countyChart"></canvas>
+        </div>
+    </div>
+
+    {{ chart_data|json_script:"chart-data" }}
+{% endblock %}
+{% block extra_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            var data = JSON.parse(document.getElementById("chart-data").textContent);
+            var green = "#145329";
+            var palette = ["#145329", "#f5a623", "#4a90d9", "#c0392b", "#8e44ad", "#16a085"];
+
+            new Chart(document.getElementById("monthlyChart"), {
+                type: "line",
+                data: {
+                    labels: data.monthly_labels,
+                    datasets: [{
+                        label: "دریافتی ماهانه (ریال)",
+                        data: data.monthly_values,
+                        borderColor: green,
+                        backgroundColor: "rgba(20,83,41,0.15)",
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {title: {display: true, text: "روند دریافتی ماهانه"}}
+                },
+            });
+
+            new Chart(document.getElementById("methodChart"), {
+                type: "doughnut",
+                data: {labels: data.method_labels, datasets: [{data: data.method_values, backgroundColor: palette}]},
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {title: {display: true, text: "سهم هر روش پرداخت"}}
+                },
+            });
+
+            new Chart(document.getElementById("statusChart"), {
+                type: "bar",
+                data: {
+                    labels: data.status_labels,
+                    datasets: [{label: "تعداد", data: data.status_values, backgroundColor: [green, "#c0392b"]}]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {title: {display: true, text: "پرداخت‌شده در مقابل پرداخت‌نشده"}, legend: {display: false}}
+                },
+            });
+
+            new Chart(document.getElementById("countyChart"), {
+                type: "bar",
+                data: {
+                    labels: data.county_labels,
+                    datasets: [{label: "مبلغ دریافتی (ریال)", data: data.county_values, backgroundColor: green}]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: "y",
+                    plugins: {
+                        title: {display: true, text: "دریافتی به تفکیک شهرستان (۱۰ مورد برتر)"},
+                        legend: {display: false}
+                    }
+                },
+            });
+        })();
+    </script>
+{% endblock %}

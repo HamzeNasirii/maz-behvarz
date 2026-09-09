@@ -1,0 +1,14 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>{{ action }} پیشنهاد حذف</h1>
+<div class="card">
+    <p>عضو: {{ proposal.member.user.get_full_name|default:proposal.member.user.username }} — دلیل: {{ proposal.get_reason_display }}</p>
+    <p>{{ proposal.reason_detail }}</p>
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">{{ action }}</button>
+    </form>
+</div>
+{% endblock %}

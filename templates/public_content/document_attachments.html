@@ -1,0 +1,65 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/document-upload.css' %}">
+{% endblock %}
+{% block content %}
+<h1>فایل‌های پیوست — {{ document.title }}</h1>
+<a href="{% url 'public_content_mgmt:edit' content_type='public_document' pk=document.pk %}" class="btn btn-secondary">بازگشت به ویرایش سند</a>
+
+<div class="card" style="margin-top: var(--space-4);">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label class="doc-upload-group__label">افزودن فایل‌های جدید (می‌توانید چند فایل را هم‌زمان انتخاب کنید)</label>
+        <input type="file" name="files" multiple id="attachments-upload-input" class="file-input-hidden">
+        <button type="button" class="btn btn-secondary" id="attachments-upload-btn">انتخاب فایل‌ها</button>
+        <span id="attachments-upload-filenames" style="font-size: var(--font-size-sm); color: var(--color-text-muted);">فایلی انتخاب نشده است</span>
+        <div><button type="submit" class="btn btn-primary" style="margin-top: var(--space-3);">آپلود</button></div>
+    </form>
+</div>
+
+<div class="card" style="margin-top: var(--space-4);">
+    <table class="data-table">
+        <tr><th>نام فایل</th><th>حجم</th><th></th></tr>
+        {% for att in attachments %}
+        <tr>
+            <td><a href="{{ att.file.url }}" target="_blank">{{ att.title|default:att.file.name }}</a></td>
+            <td>{{ att.file_size|filesizeformat }}</td>
+            <td>
+                <a href="{{ att.file.url }}" download class="btn btn-secondary btn-sm">دانلود</a>
+                <button type="button" class="btn btn-danger btn-sm js-delete-attachment" data-url="{% url 'public_content_mgmt:document_attachment_delete' pk=document.pk file_pk=att.pk %}">حذف</button>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">{% include "components/empty_state.html" with empty_message="فایلی پیوست نشده است." %}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<form method="post" id="delete-attachment-form" style="display:none;">{% csrf_token %}</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+    var input = document.getElementById("attachments-upload-input");
+    var btn = document.getElementById("attachments-upload-btn");
+    var filenamesSpan = document.getElementById("attachments-upload-filenames");
+
+    btn.addEventListener("click", function () { input.click(); });
+    input.addEventListener("change", function () {
+        if (!input.files.length) return;
+        filenamesSpan.textContent = input.files.length + " فایل انتخاب شد";
+    });
+
+    document.querySelectorAll(".js-delete-attachment").forEach(function (delBtn) {
+        delBtn.addEventListener("click", function () {
+            if (confirm("آیا از حذف این فایل مطمئن هستید؟")) {
+                var form = document.getElementById("delete-attachment-form");
+                form.action = delBtn.dataset.url;
+                form.submit();
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

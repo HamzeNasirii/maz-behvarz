@@ -1,0 +1,208 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/document-upload.css' %}">
+{% endblock %}
+{% block content %}
+    <h1>ارسال مدارک</h1>
+    <div class="card">
+        <p style="color: var(--color-text-muted);">در صورت تمایل، می‌توانید در هر زمان مناسب، مدارک زیر را ارسال یا
+            به‌روزرسانی کنید.</p>
+        {% include "components/form_errors.html" %}
+
+        <form method="post" enctype="multipart/form-data" id="documents-form">
+            {% csrf_token %}
+
+            <div class="doc-upload-group">
+                <label class="doc-upload-group__label">{{ form.legal_decree_file.label }}</label>
+
+                {% if member.legal_decree_file %}
+                    <div class="doc-preview">
+                        {% if member.legal_decree_file.name|slice:"-4:" == ".pdf" %}
+                            <div class="doc-preview__icon">📄</div>
+                        {% else %}
+                            <img src="{{ member.legal_decree_file.url }}" alt="پیش‌نمایش" class="doc-preview__image">
+                        {% endif %}
+                        <a href="{{ member.legal_decree_file.url }}" target="_blank" class="doc-preview__filename">مشاهده‌ی
+                            فایل فعلی</a>
+                        <button type="button" class="btn btn-danger btn-sm js-remove-doc" data-field="legal_decree_file"
+                                data-label="آخرین حکم کارگزینی">حذف
+                        </button>
+                    </div>
+                {% endif %}
+
+                <div class="custom-file-picker">
+                    <button type="button" class="btn btn-secondary custom-file-picker__btn"
+                            data-target="id_legal_decree_file">انتخاب فایل
+                    </button>
+                    <span class="custom-file-picker__filename"
+                          id="filename_legal_decree_file">فایلی انتخاب نشده است</span>
+                    {{ form.legal_decree_file }}
+                </div>
+            </div>
+
+            <div class="doc-upload-group">
+                <label class="doc-upload-group__label">{{ form.network_letter_file.label }}</label>
+
+                {% if member.network_letter_file %}
+                    <div class="doc-preview">
+                        {% if member.network_letter_file.name|slice:"-4:" == ".pdf" %}
+                            <div class="doc-preview__icon">📄</div>
+                        {% else %}
+                            <img src="{{ member.network_letter_file.url }}" alt="پیش‌نمایش" class="doc-preview__image">
+                        {% endif %}
+                        <a href="{{ member.network_letter_file.url }}" target="_blank" class="doc-preview__filename">مشاهده‌ی
+                            فایل فعلی</a>
+                        <button type="button" class="btn btn-danger btn-sm js-remove-doc"
+                                data-field="network_letter_file" data-label="نامه‌ی اشتغال به کار ممهور شبکه بهداشت">حذف
+                        </button>
+                    </div>
+                {% endif %}
+
+                <div class="custom-file-picker">
+                    <button type="button" class="btn btn-secondary custom-file-picker__btn"
+                            data-target="id_network_letter_file">انتخاب فایل
+                    </button>
+                    <span class="custom-file-picker__filename"
+                          id="filename_network_letter_file">فایلی انتخاب نشده است</span>
+                    {{ form.network_letter_file }}
+                </div>
+            </div>
+
+            <div class="doc-upload-group">
+                <label class="doc-upload-group__label">{{ form.national_id_card_file.label }}</label>
+
+                {% if member.national_id_card_file %}
+                    <div class="doc-preview">
+                        <img src="{{ member.national_id_card_file.url }}" alt="پیش‌نمایش" class="doc-preview__image">
+                        <a href="{{ member.national_id_card_file.url }}" target="_blank" class="doc-preview__filename">مشاهده‌ی
+                            فایل فعلی</a>
+                        <button type="button" class="btn btn-danger btn-sm js-remove-doc"
+                                data-field="national_id_card_file" data-label="تصویر کارت ملی">حذف
+                        </button>
+                    </div>
+                {% endif %}
+
+                <div class="custom-file-picker">
+                    <button type="button" class="btn btn-secondary custom-file-picker__btn"
+                            data-target="id_national_id_card_file">انتخاب فایل
+                    </button>
+                    <span class="custom-file-picker__filename"
+                          id="filename_national_id_card_file">فایلی انتخاب نشده است</span>
+                    {{ form.national_id_card_file }}
+                </div>
+            </div>
+
+            <div class="doc-upload-group">
+                <label class="doc-upload-group__label">{{ form.birth_certificate_images.label }}</label>
+
+                {% for page in birth_certificate_pages %}
+                    <div class="doc-preview">
+                        <img src="{{ page.image.url }}" alt="پیش‌نمایش" class="doc-preview__image">
+                        <a href="{{ page.image.url }}" target="_blank" class="doc-preview__filename">مشاهده‌ی فایل
+                            فعلی</a>
+                        <button type="button" class="btn btn-danger btn-sm js-remove-birth-page"
+                                data-pk="{{ page.pk }}">حذف
+                        </button>
+                    </div>
+                {% endfor %}
+
+                <div class="custom-file-picker">
+                    <button type="button" class="btn btn-secondary custom-file-picker__btn"
+                            data-target="id_birth_certificate_images">انتخاب تصاویر
+                    </button>
+                    <span class="custom-file-picker__filename" id="filename_birth_certificate_images">فایلی انتخاب نشده است</span>
+                    {{ form.birth_certificate_images }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">ذخیره</button>
+        </form>
+
+        <form method="post" id="remove-doc-form" style="display:none;">
+            {% csrf_token %}
+            <input type="hidden" name="remove_field" id="remove_field_input">
+        </form>
+    </div>
+{% endblock %}
+{% block extra_js %}
+
+    <script>
+        (function () {
+            var form = document.getElementById("documents-form");
+            if (!form) return;
+
+            var progressBar = document.createElement("div");
+            progressBar.id = "upload-progress-bar";
+            progressBar.style.cssText = "display:none; height:6px; background:var(--color-border); border-radius:3px; margin-bottom:var(--space-3); overflow:hidden;";
+            progressBar.innerHTML = '<div id="upload-progress-fill" style="height:100%; width:0%; background:var(--color-primary); transition:width 0.2s;"></div>';
+            form.insertBefore(progressBar, form.firstChild);
+
+            form.addEventListener("submit", function (e) {
+                var hasFiles = Array.from(form.querySelectorAll('input[type="file"]')).some(function (i) {
+                    return i.files.length > 0;
+                });
+                if (!hasFiles) return; // بدون فایل جدید، ارسال معمولی
+
+                e.preventDefault();
+                var xhr = new XMLHttpRequest();
+                var formData = new FormData(form);
+
+                progressBar.style.display = "block";
+                xhr.upload.addEventListener("progress", function (evt) {
+                    if (evt.lengthComputable) {
+                        var percent = Math.round((evt.loaded / evt.total) * 100);
+                        document.getElementById("upload-progress-fill").style.width = percent + "%";
+                    }
+                });
+                xhr.addEventListener("load", function () {
+                    window.location.reload();
+                });
+                xhr.addEventListener("error", function () {
+                    form.submit(); // Fallback به ارسال معمولی
+                });
+                xhr.open("POST", form.action || window.location.href);
+                xhr.send(formData);
+            });
+        })();
+        (function () {
+            document.querySelectorAll(".custom-file-picker__btn").forEach(function (btn) {
+                var targetId = btn.dataset.target;
+                var input = document.getElementById(targetId);
+                var filenameSpan = document.getElementById("filename_" + targetId.replace("id_", ""));
+
+                btn.addEventListener("click", function () {
+                    input.click();
+                });
+                input.addEventListener("change", function () {
+                    if (!input.files.length) {
+                        filenameSpan.textContent = "فایلی انتخاب نشده است";
+                        return;
+                    }
+                    filenameSpan.textContent = input.files.length > 1
+                        ? input.files.length + " فایل انتخاب شد"
+                        : input.files[0].name;
+                });
+            });
+
+            document.querySelectorAll(".js-remove-doc").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var label = btn.dataset.label;
+                    if (confirm("آیا از حذف «" + label + "» مطمئن هستید؟ این عمل قابل بازگشت نیست.")) {
+                        document.getElementById("remove_field_input").value = btn.dataset.field;
+                        document.getElementById("remove-doc-form").submit();
+                    }
+                });
+            });
+
+            document.querySelectorAll(".js-remove-birth-page").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    if (confirm("آیا از حذف این تصویر مطمئن هستید؟")) {
+                        document.getElementById("remove_field_input").value = "birth_page:" + btn.dataset.pk;
+                        document.getElementById("remove-doc-form").submit();
+                    }
+                });
+            });
+        })();
+    </script>
+{% endblock %}

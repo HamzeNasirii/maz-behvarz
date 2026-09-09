@@ -1,0 +1,21 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>مدیریت اسناد</h1>
+<a href="{% url 'documents_mgmt:upload' %}" class="btn btn-primary">آپلود سند جدید</a>
+<div class="table-wrapper">
+    <table class="data-table">
+        <tr><th>عنوان</th><th>نوع</th><th>وضعیت</th><th>سطح دسترسی</th><th></th></tr>
+        {% for doc in documents %}
+        <tr>
+            <td>{{ doc.title }}</td>
+            <td>{{ doc.get_document_type_display }}</td>
+            <td><span class="badge badge-{% if doc.status == "published" %}active{% else %}inactive{% endif %}">{{ doc.get_status_display }}</span></td>
+            <td>{{ doc.get_visibility_display }}</td>
+            <td><a href="{% url 'documents_mgmt:detail' pk=doc.pk %}">مشاهده</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">{% include "components/empty_state.html" with empty_message="سندی در محدوده‌ی دسترسی شما یافت نشد." %}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

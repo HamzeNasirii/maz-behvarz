@@ -1,0 +1,13 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>پیشنهاد حذف عضو</h1>
+<div class="card">
+    <p>عضو: <strong>{{ member.user.get_full_name|default:member.user.username }}</strong></p>
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-danger">ثبت پیشنهاد</button>
+    </form>
+</div>
+{% endblock %}

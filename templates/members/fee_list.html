@@ -1,0 +1,98 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+    <h1>مدیریت حق عضویت</h1>
+    <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">برای ثبت حق عضویت جدید، از صفحه‌ی جزئیات
+        همان عضو اقدام کنید.</p>
+    {% if can_decide %}
+        <a href="{% url 'members_fees:change_list' %}" class="btn btn-secondary">درخواست‌های اصلاح/حذف در انتظار</a>
+        <a href="{% url 'members_fees:financial_report' %}" class="btn btn-secondary">گزارش‌های مالی</a>
+    {% endif %}
+
+    <div class="card">
+        <form method="get" class="board-create-form">
+            <div style="display:flex; gap: var(--space-4); flex-wrap: wrap; align-items:flex-end;">
+                <div style="flex:1; min-width:200px;">
+                    <label for="{{ filter_form.q.id_for_label }}">{{ filter_form.q.label }}</label>
+                    {{ filter_form.q }}
+                </div>
+                <div style="min-width:160px;">
+                    <label for="{{ filter_form.payment_status.id_for_label }}">{{ filter_form.payment_status.label }}</label>
+                    {{ filter_form.payment_status }}
+                </div>
+                <div style="min-width:150px;">
+                    <label for="{{ filter_form.due_date_from.id_for_label }}">{{ filter_form.due_date_from.label }}</label>
+                    {{ filter_form.due_date_from }}
+                </div>
+                <div style="min-width:150px;">
+                    <label for="{{ filter_form.due_date_to.id_for_label }}">{{ filter_form.due_date_to.label }}</label>
+                    {{ filter_form.due_date_to }}
+                </div>
+                <div style="min-width:150px;">
+                    <label for="{{ filter_form.payment_date_from.id_for_label }}">{{ filter_form.payment_date_from.label }}</label>
+                    {{ filter_form.payment_date_from }}
+                </div>
+                <div style="min-width:150px;">
+                    <label for="{{ filter_form.payment_date_to.id_for_label }}">{{ filter_form.payment_date_to.label }}</label>
+                    {{ filter_form.payment_date_to }}
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">اعمال فیلتر</button>
+                    <a href="{% url 'members_fees:list' %}" class="btn btn-secondary">پاک‌کردن</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr>
+                <th>عضو</th>
+                <th>مبلغ (ریال)</th>
+                <th>سررسید</th>
+                <th>تاریخ پرداخت</th>
+                <th>نحوه‌ی پرداخت</th>
+                <th>وضعیت</th>
+                <th>درخواست</th>
+                <th style="min-width:180px;">عملیات پرداخت</th>
+                <th style="min-width:180px;">درخواست‌ها</th>
+            </tr>
+            {% for fee in fees %}
+                <tr>
+                    <td>{{ fee.member.user.get_full_name|default:fee.member.user.username }}</td>
+                    <td>{{ fee.amount|comma }}</td>
+                    <td>{{ fee.due_date|jalali }}</td>
+                    <td>{{ fee.payment_date|jalali|default:"—" }}</td>
+                    <td>{{ fee.get_payment_method_display|default:"—" }}</td>
+                    <td><span
+                            class="badge badge-{% if fee.payment_status == "paid" %}active{% else %}inactive{% endif %}">{{ fee.get_payment_status_display }}</span>
+                    </td>
+                    <td>
+                        {% if fee.has_pending_change %}
+                            <span class="badge" style="background:#f5a623; color:#fff;">درخواست در جریان</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if fee.payment_status == "unpaid" %}
+                            <a href="{% url 'members_fees:mark_paid' pk=fee.pk %}" class="btn btn-success btn-sm">ثبت
+                                پرداخت</a>
+                        {% else %}
+                            <span style="color: var(--color-text-muted); font-size: var(--font-size-sm);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'members_fees:edit_request' pk=fee.pk %}" class="btn btn-warning btn-sm">درخواست
+                            ویرایش</a>
+                        <a href="{% url 'members_fees:delete_request' pk=fee.pk %}" class="btn btn-danger btn-sm">درخواست
+                            حذف</a>
+
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="9">{% include "components/empty_state.html" with empty_message="حق عضویتی ثبت نشده است." %}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

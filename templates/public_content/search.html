@@ -1,0 +1,57 @@
+{% extends "website/base.html" %}
+{% block content %}
+<h1>جستجو در سایت</h1>
+<div class="card">
+    <form method="get">
+        <div class="form-group">
+            {{ form.q }}
+        </div>
+        <button type="submit" class="btn btn-primary">جستجو</button>
+    </form>
+</div>
+
+{% if query %}
+<div class="card">
+    <p>{{ total_count }} نتیجه برای «{{ query }}» یافت شد.</p>
+</div>
+
+{% if results.news %}
+<div class="card">
+    <h2 class="card__title">اخبار</h2>
+    {% for item in results.news %}<p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>{% endfor %}
+</div>
+{% endif %}
+
+{% if results.announcements %}
+<div class="card">
+    <h2 class="card__title">اطلاعیه‌ها</h2>
+    {% for item in results.announcements %}<p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>{% endfor %}
+</div>
+{% endif %}
+
+{% if results.events %}
+<div class="card">
+    <h2 class="card__title">رویدادها</h2>
+    {% for item in results.events %}<p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>{% endfor %}
+</div>
+{% endif %}
+
+{% if results.documents %}
+<div class="card">
+    <h2 class="card__title">اسناد</h2>
+    {% for item in results.documents %}<p>{{ item.title }}</p>{% endfor %}
+</div>
+{% endif %}
+
+{% if results.faqs %}
+<div class="card">
+    <h2 class="card__title">پرسش‌های متداول</h2>
+    {% for item in results.faqs %}<p>{{ item.question }}</p>{% endfor %}
+</div>
+{% endif %}
+
+{% if total_count == 0 %}
+    {% include "components/empty_state.html" with empty_message="نتیجه‌ای برای این جستجو یافت نشد." %}
+{% endif %}
+{% endif %}
+{% endblock %}

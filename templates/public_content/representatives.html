@@ -1,0 +1,14 @@
+{% extends "website/base.html" %}
+{% block content %}
+<h1>نمایندگان شهرستان‌ها</h1>
+<div class="card">
+    {% for r in representatives %}
+        <div style="margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border);">
+            <p><strong>{{ r.user.get_full_name|default:r.user.username }}</strong></p>
+            <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">{{ r.role.name }} — {{ r.access_scope.county.name }}</p>
+        </div>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="نماینده‌ی عمومی برای نمایش ثبت نشده است." %}
+    {% endfor %}
+</div>
+{% endblock %}

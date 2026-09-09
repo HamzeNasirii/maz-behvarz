@@ -1,0 +1,240 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+    <h1>جزئیات عضو</h1>
+    <div class="card" style="background: var(--color-highlight-bg);">
+        <h2 class="card__title">دسترسی سریع</h2>
+        <div style="display:flex; gap: var(--space-2); flex-wrap: wrap;">
+            <a href="{% url 'roles:management_list' %}?ref={{ member_user_ref }}" class="btn btn-primary">تخصیص نقش /
+                مشاهده‌ی نقش‌های این فرد</a>
+            {% if user.is_staff %}
+                <a href="/admin/accounts/customuser/{{ member.user.pk }}/change/" class="btn btn-secondary">مشاهده‌ی
+                    حساب
+                    کاربری (Admin)</a>
+            {% endif %}
+            <a href="{% url 'auth_ref:permission_list' %}" class="btn btn-secondary">فهرست مجوزها</a>
+            <a href="{% url 'auth_ref:scope_list' %}" class="btn btn-secondary">فهرست محدوده‌های دسترسی</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <p>نام: {{ member.user.get_full_name|default:member.user.username }}</p>
+        <p>شماره عضویت: {{ member.membership_number|default:"—" }}</p>
+        <p>وضعیت پذیرش: <span
+                class="badge badge-{{ member.approval_status }}">{{ member.get_approval_status_display }}</span></p>
+        <p>وضعیت عضویت: <span
+                class="badge badge-{% if member.status == "active" %}active{% else %}inactive{% endif %}">{{ member.get_status_display }}</span>
+        </p>
+        <a href="{% url 'members_portal:membership_management_detail' pk=member.pk %}" class="btn btn-primary">مدیریت
+            وضعیت عضویت</a>
+        <a href="{% url 'members_portal:propose_removal' member_pk=member.pk %}" class="btn btn-danger">پیشنهاد حذف
+            عضو</a>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">حق‌های عضویت</h2>
+        <a href="{% url 'members_fees:create' member_pk=member.pk %}" class="btn btn-primary btn-sm">+ ثبت حق عضویت
+            جدید</a>
+        <div class="table-wrapper" style="margin-top: var(--space-3);">
+            <table class="data-table">
+                <tr>
+                    <th>مبلغ</th>
+                    <th>سررسید</th>
+                    <th>وضعیت پرداخت</th>
+                    <th></th>
+                </tr>
+                {% for fee in fees %}
+                    <tr>
+                        <td>{{ fee.amount }}</td>
+                        <td>{{ fee.due_date|jalali }}</td>
+                        <td><span
+                                class="badge badge-{% if fee.payment_status == "paid" %}active{% else %}inactive{% endif %}">{{ fee.get_payment_status_display }}</span>
+                        </td>
+                        <td>
+                            {% if fee.payment_status == "unpaid" %}
+                                <a href="{% url 'members_fees:mark_paid' pk=fee.pk %}" class="btn btn-success btn-sm">ثبت
+                                    پرداخت</a>
+                                <form method="post" action="{% url 'members_fees:delete' pk=fee.pk %}"
+                                      style="display:inline;" class="js-confirm-delete-fee">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">حذف</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">{% include "components/empty_state.html" with empty_message="حق عضویتی ثبت نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="card__title">مدارک ارسال‌شده</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>مدرک</th>
+                    <th>وضعیت</th>
+                    <th>فایل</th>
+                    <th>عملیات</th>
+                </tr>
+                {% for row in document_rows %}
+                    <tr>
+                        <td><strong>{{ row.label }}</strong></td>
+                        <td>
+                                                <span class="badge" style="background: var(--color-bg);
+                                                        color: {% if row.status == 'missing' %}var(--color-danger){% elif row.status == 'pending' %}#f5a623{% elif row.status == 'rejected' %}#c0392b{% else %}var(--color-success){% endif %};">
+                            {% if row.status == "missing" %}ارسال‌نشده{% elif row.status == "pending" %}در انتظار
+                                بررسی{% elif row.status == "rejected" %}رد شده{% else %}تأییدشده{% endif %}
+                        </span>
+                            {% if row.rejection_reason %}
+                                <p style="color: var(--color-danger); font-size: var(--font-size-sm); margin: var(--space-1) 0 0;">
+                                    دلیل رد: {{ row.rejection_reason }}</p>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for f in row.files %}
+                                <a href="{{ f.url }}" target="_blank"
+                                   style="display:inline-block; margin-left: var(--space-2);">{{ f.name }}</a>
+                            {% empty %}
+                                <span style="color: var(--color-text-muted);">—</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if row.status != "missing" %}
+                                <div style="display:flex; gap: var(--space-2);">
+                                    {% if row.status != "approved" %}
+                                        <form method="post"
+                                              action="{% url 'members_portal:document_approve' pk=member.pk document_key=row.key %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success btn-sm">تأیید</button>
+                                        </form>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-danger btn-sm js-reject-document"
+                                            data-key="{{ row.key }}">رد
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <form method="post" id="reject-document-form" style="display:none;">
+        {% csrf_token %}
+        <input type="hidden" name="reason" id="reject-reason-input">
+    </form>
+
+    <form method="post" id="reject-document-form" style="display:none;">
+        {% csrf_token %}
+        <input type="hidden" name="reason" id="reject-reason-input">
+    </form>
+    <div class="card">
+        <h2 class="card__title">نقش‌های فعلی این عضو</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>نقش</th>
+                    <th>محدوده</th>
+                    <th>وضعیت</th>
+                    <th></th>
+                </tr>
+                {% for assignment in member.user.role_assignments.all %}
+                    {% if assignment.is_active %}
+                        <tr>
+                            <td>{{ assignment.role.name }}</td>
+                            <td>{{ assignment.access_scope }}</td>
+                            <td><span class="badge badge-active">{{ assignment.get_status_display }}</span></td>
+                            <td><a href="{% url 'roles:management_detail' pk=assignment.pk %}"
+                                   class="btn btn-warning btn-sm">مدیریت</a></td>
+                        </tr>
+                    {% endif %}
+                {% empty %}
+                    <tr>
+                        <td colspan="4">{% include "components/empty_state.html" with empty_message="نقش فعالی ثبت نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">تاریخچه‌ی عضویت</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>از تاریخ</th>
+                    <th>تا تاریخ</th>
+                    <th>وضعیت</th>
+                </tr>
+                {% for period in membership_periods %}
+                    <tr>
+                        <td>{{ period.start_date|jalali }}</td>
+                        <td>{{ period.end_date|jalali|default:"تاکنون" }}</td>
+                        <td>
+                            <span class="badge badge-{% if period.is_active %}active{% else %}inactive{% endif %}">
+                                {% if period.is_active %}فعال{% else %}پایان‌یافته{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">{% include "components/empty_state.html" with empty_message="سابقه‌ای ثبت نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">تاریخچه‌ی محل خدمت</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>خانه بهداشت</th>
+                    <th>از تاریخ</th>
+                    <th>تا تاریخ</th>
+                </tr>
+                {% for assignment in employment_history %}
+                    <tr>
+                        <td>{{ assignment.health_house.name }}</td>
+                        <td>{{ assignment.start_date|jalali }}</td>
+                        <td>{{ assignment.end_date|jalali|default:"تاکنون" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">{% include "components/empty_state.html" with empty_message="سابقه‌ای ثبت نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+{% endblock %}
+{% block extra_js %}
+    <script>
+        document.querySelectorAll(".js-reject-document").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var reason = prompt("دلیل رد این مدرک را وارد کنید:");
+                if (reason === null || reason.trim() === "") return;
+                var form = document.getElementById("reject-document-form");
+                form.action = "/management/members/{{ member.pk }}/documents/" + btn.dataset.key + "/reject/";
+                document.getElementById("reject-reason-input").value = reason;
+                form.submit();
+            });
+        });
+    </script>
+    <script>
+        document.querySelectorAll(".js-confirm-delete-fee").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                if (!confirm("آیا از حذف این حق عضویت مطمئن هستید؟ این عمل قابل بازگشت نیست.")) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+{% endblock %}

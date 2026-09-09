@@ -1,0 +1,52 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+    <h1>درخواست {{ action_label }} حق عضویت</h1>
+    <div class="card">
+        <p>عضو: <strong>{{ fee.member.user.get_full_name|default:fee.member.user.username }}</strong></p>
+        <p>مبلغ فعلی: {{ fee.amount|comma }} ریال — سررسید فعلی: {{ fee.due_date|jalali }}</p>
+        {% include "components/form_errors.html" %}
+        <form method="post" class="board-create-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div style="margin-bottom: var(--space-4);">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.name == "new_amount" %}
+                        <p class="content-form-field__help" id="amount-toman-display"></p>
+                    {% endif %}
+                    {% if field.errors %}<span class="form-error-text">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">ثبت درخواست {{ action_label }}</button>
+        </form>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        (function () {
+            var amountInput = document.getElementById("id_new_amount");
+            if (!amountInput) return;
+            var helperText = document.getElementById("amount-toman-display");
+
+            function updateDisplay() {
+                var raw = amountInput.value.replace(/[^\d]/g, "");
+                if (!raw) {
+                    amountInput.value = "";
+                    helperText.textContent = "";
+                    return;
+                }
+                var numeric = parseInt(raw, 10);
+                amountInput.value = numeric.toLocaleString("en-US");
+                var toman = Math.floor(numeric / 10);
+                helperText.textContent = "معادل " + toman.toLocaleString("en-US") + " تومان";
+            }
+
+            amountInput.addEventListener("keypress", function (e) {
+                if (!/[0-9]/.test(e.key)) e.preventDefault();
+            });
+            amountInput.addEventListener("input", updateDisplay);
+            updateDisplay();
+        })();
+    </script>
+{% endblock %}

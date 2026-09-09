@@ -1,0 +1,71 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/document-upload.css' %}">
+{% endblock %}
+{% block content %}
+    <h1>گالری تصاویر — {{ article.title }}</h1>
+    <a href="{% url 'public_content_mgmt:edit' content_type='news' pk=article.pk %}" class="btn btn-secondary">بازگشت به
+        ویرایش خبر</a>
+
+    <div class="card" style="margin-top: var(--space-4);">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label class="doc-upload-group__label">افزودن تصاویر جدید (می‌توانید چند تصویر را هم‌زمان انتخاب
+                کنید)</label>
+            <input type="file" name="images" multiple accept="image/*" id="gallery-upload-input"
+                   class="file-input-hidden">
+            <button type="button" class="btn btn-secondary" id="gallery-upload-btn">انتخاب تصاویر</button>
+            <span id="gallery-upload-filenames" style="font-size: var(--font-size-sm); color: var(--color-text-muted);">فایلی انتخاب نشده است</span>
+            <div>
+                <button type="submit" class="btn btn-primary" style="margin-top: var(--space-3);">آپلود</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" style="margin-top: var(--space-4);">
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--space-3);">
+            {% for img in images %}
+                <div style="position:relative;">
+                    <img src="{{ img.image.url }}" alt=""
+                         style="width:100%; height:120px; object-fit:cover; border-radius: var(--radius-md); border:1px solid var(--color-border);">
+                    <button type="button" class="profile-picture-wrapper__remove js-delete-gallery-image"
+                            data-url="{% url 'public_content_mgmt:news_gallery_delete' pk=article.pk image_pk=img.pk %}"
+                            style="position:absolute; top:4px; left:4px;">✕
+                    </button>
+                </div>
+            {% empty %}
+                <p style="color: var(--color-text-muted);">هنوز تصویری در گالری این خبر ثبت نشده است.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <form method="post" id="delete-gallery-image-form" style="display:none;">{% csrf_token %}</form>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        (function () {
+            var input = document.getElementById("gallery-upload-input");
+            var btn = document.getElementById("gallery-upload-btn");
+            var filenamesSpan = document.getElementById("gallery-upload-filenames");
+
+            btn.addEventListener("click", function () {
+                input.click();
+            });
+            input.addEventListener("change", function () {
+                if (!input.files.length) return;
+                filenamesSpan.textContent = input.files.length + " فایل انتخاب شد";
+            });
+
+            document.querySelectorAll(".js-delete-gallery-image").forEach(function (delBtn) {
+                delBtn.addEventListener("click", function () {
+                    if (confirm("آیا از حذف این تصویر مطمئن هستید؟")) {
+                        var form = document.getElementById("delete-gallery-image-form");
+                        form.action = delBtn.dataset.url;
+                        form.submit();
+                    }
+                });
+            });
+        })();
+    </script>
+{% endblock %}

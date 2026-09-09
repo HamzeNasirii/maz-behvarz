@@ -1,0 +1,77 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+    <h1>مدیریت درخواست‌های عضویت</h1>
+
+    <div class="card">
+        <h2 class="card__title">در انتظار بررسی ({{ members|length }})</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>کاربر</th>
+                    <th>وضعیت</th>
+                    <th></th>
+                </tr>
+                {% for member in members %}
+                    <tr>
+                        <td>{{ member.user.get_full_name|default:member.user.username }}</td>
+                        <td><span class="badge badge-{{ member.status }}">{{ member.get_status_display }}</span></td>
+                        <td><a href="{% url 'members_portal:membership_management_detail' pk=member.pk %}"
+                               class="btn btn-warning btn-sm">بررسی/تأیید/رد درخواست عضویت</a></td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">{% include "components/empty_state.html" with empty_message="درخواستی در محدوده‌ی دسترسی شما یافت نشد." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card__title">در انتظار تأیید مدارک ({{ awaiting_docs|length }})</h2>
+        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">این اعضا قبلاً پذیرفته شده‌اند و
+            می‌توانند وارد شوند، ولی تا تأیید کامل مدارک، دسترسی سطح بهورز ندارند.</p>
+        <p style="font-size: var(--font-size-sm); display:flex; gap: var(--space-3); align-items:center;">
+            <span class="doc-status-badge doc-status-badge--missing">ارسال‌نشده</span>
+            <span class="doc-status-badge doc-status-badge--pending">ارسال‌شده، تأییدنشده</span>
+            <span class="doc-status-badge doc-status-badge--approved">تأییدشده</span>
+        </p>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>کاربر</th>
+                    <th>وضعیت مدارک</th>
+                    <th></th>
+                </tr>
+                {% for member in awaiting_docs %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'members_portal:member_detail' pk=member.pk %}">{{ member.user.get_full_name|default:member.user.username }}</a>
+                        </td>
+                        <td>
+                                                        {% for row in member.document_status_rows %}
+                                {% if row.status == "missing" %}
+                                    <span class="doc-status-badge doc-status-badge--missing">{{ row.label }}</span>
+                                {% elif row.status == "pending" %}
+                                    <span class="doc-status-badge doc-status-badge--pending">{{ row.label }}</span>
+                                {% elif row.status == "rejected" %}
+                                    <span class="doc-status-badge doc-status-badge--rejected">{{ row.label }}</span>
+                                {% else %}
+                                    <span class="doc-status-badge doc-status-badge--approved">{{ row.label }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <a href="{% url 'members_portal:member_detail' pk=member.pk %}"
+                               class="btn btn-primary btn-sm">بررسی مدارک</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">{% include "components/empty_state.html" with empty_message="عضوی در انتظار تأیید مدارک نیست." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

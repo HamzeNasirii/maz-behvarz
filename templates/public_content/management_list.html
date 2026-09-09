@@ -1,0 +1,40 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>{{ label }}</h1>
+<a href="{% url 'public_content_mgmt:hub' %}" class="btn btn-secondary">بازگشت به فهرست انواع محتوا</a>
+{% if can_create %}
+<a href="{% url 'public_content_mgmt:create' content_type=content_type %}" class="btn btn-primary">+ افزودن {{ label }} جدید</a>
+{% endif %}
+
+<div class="table-wrapper" style="margin-top: var(--space-4);">
+    <table class="data-table">
+        <tr><th>عنوان</th><th></th></tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item }}</td>
+            <td class="data-table__actions">
+                <a href="{% url 'public_content_mgmt:edit' content_type=content_type pk=item.pk %}" class="btn btn-warning btn-sm">ویرایش</a>
+                <button type="button" class="btn btn-danger btn-sm js-delete-item" data-url="{% url 'public_content_mgmt:delete' content_type=content_type pk=item.pk %}" data-label="{{ item }}">حذف</button>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="2">{% include "components/empty_state.html" with empty_message="موردی ثبت نشده است." %}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<form method="post" id="delete-item-form" style="display:none;">{% csrf_token %}</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll(".js-delete-item").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+        if (confirm("آیا از حذف «" + btn.dataset.label + "» مطمئن هستید؟ این عمل قابل بازگشت نیست.")) {
+            var form = document.getElementById("delete-item-form");
+            form.action = btn.dataset.url;
+            form.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>مدیریت اعضا</h1>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4);">
+    <a href="{% url 'members_portal:member_list' %}" class="card" style="text-decoration:none; color:inherit;">
+        <h2 class="card__title">فهرست اعضا</h2>
+        <p style="font-size: var(--font-size-xl); color: var(--color-primary);">{{ total_members }}</p>
+        <p style="color: var(--color-text-muted);">مشاهده و جزئیات اعضا</p>
+    </a>
+    <a href="{% url 'members_portal:membership_management_list' %}" class="card" style="text-decoration:none; color:inherit;">
+        <h2 class="card__title">در انتظار بررسی</h2>
+        <p style="font-size: var(--font-size-xl); color: var(--color-warning);">{{ pending_count }}</p>
+        <p style="color: var(--color-text-muted);">بررسی/تأیید/رد درخواست عضویت</p>
+    </a>
+    {% if unpaid_fees_count is not None %}
+    <a href="{% url 'members_fees:list' %}" class="card" style="text-decoration:none; color:inherit;">
+        <h2 class="card__title">حق عضویت</h2>
+        <p style="font-size: var(--font-size-xl); color: var(--color-danger);">{{ unpaid_fees_count }}</p>
+        <p style="color: var(--color-text-muted);">پرداخت‌نشده — مدیریت حق‌های عضویت</p>
+    </a>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/content-form.css' %}">
+{% endblock %}
+{% block content %}
+<div class="content-form-header">
+    <h1>ثبت حق عضویت جدید</h1>
+</div>
+
+<div class="card content-form-card">
+    {% if member %}
+    <p style="color: var(--color-text-muted); margin-top:0;">عضو: <strong>{{ member.user.get_full_name|default:member.user.username }}</strong></p>
+    {% endif %}
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="content-form-field">
+                <label for="{{ field.id_for_label }}" class="content-form-field__label">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="content-form-field__required">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                    <p class="content-form-field__help">{{ field.help_text }}</p>
+                {% endif %}
+                {% if field.errors %}
+                    <p class="content-form-field__error">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <div class="content-form-actions">
+            <button type="submit" class="btn btn-primary">ثبت</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+    var amountInput = document.getElementById("id_amount");
+    if (!amountInput) return;
+
+    var helperText = document.createElement("p");
+    helperText.className = "content-form-field__help";
+    helperText.id = "amount-toman-display";
+    amountInput.insertAdjacentElement("afterend", helperText);
+
+    function updateDisplay() {
+        var raw = amountInput.value.replace(/[^\d]/g, "");
+        if (!raw) {
+            amountInput.value = "";
+            helperText.textContent = "";
+            return;
+        }
+        var numeric = parseInt(raw, 10);
+        amountInput.value = numeric.toLocaleString("en-US");
+        var toman = Math.floor(numeric / 10);
+        helperText.textContent = "معادل " + toman.toLocaleString("en-US") + " تومان";
+    }
+
+    // جلوگیری از تایپ هر کاراکتری جز رقم (منفی/اعشار/حرف اصلاً وارد نمی‌شوند)
+    amountInput.addEventListener("keypress", function (e) {
+        if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    // پاک‌سازی مضاعف برای حالت Paste یا ورودی‌های غیرمستقیم
+    amountInput.addEventListener("input", updateDisplay);
+
+    updateDisplay();
+})();
+</script>
+{% endblock %}

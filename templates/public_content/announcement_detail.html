@@ -1,0 +1,12 @@
+{% extends "website/base.html" %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block meta_description %}{{ article.summary|default:article.title }}{% endblock %}
+{% block og_title %}{{ article.title }}{% endblock %}
+{% block og_description %}{{ article.summary|default:article.title }}{% endblock %}
+{% block content %}
+    <article class="card">
+        <h1>{{ announcement.title }}</h1>
+        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">{{ announcement.publish_at|date:"Y-m-d" }}</p>
+        <div>{{ announcement.content|linebreaks }}</div>
+    </article>
+{% endblock %}

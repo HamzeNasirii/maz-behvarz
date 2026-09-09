@@ -1,0 +1,28 @@
+{% extends "website/base.html" %}
+{% block content %}
+<h1>رویدادها</h1>
+
+<div class="card">
+    <h2 class="card__title">رویدادهای پیش‌رو</h2>
+    {% for event in upcoming_events %}
+        <div style="margin-bottom: var(--space-3);">
+            <h3><a href="{{ event.get_absolute_url }}">{{ event.title }}</a></h3>
+            <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
+                {{ event.start_datetime|date:"Y-m-d H:i" }} — {{ event.location }}
+            </p>
+        </div>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="در حال حاضر رویداد پیش‌رویی وجود ندارد." %}
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2 class="card__title">رویدادهای گذشته</h2>
+    {% for event in past_page_obj %}
+        <p>{{ event.title }} — {{ event.start_datetime|date:"Y-m-d" }}</p>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="رویداد گذشته‌ای ثبت نشده است." %}
+    {% endfor %}
+    {% include "components/pagination.html" with page_obj=past_page_obj %}
+</div>
+{% endblock %}

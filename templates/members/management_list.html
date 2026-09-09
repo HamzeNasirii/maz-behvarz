@@ -1,0 +1,76 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/org-tree.css' %}">
+{% endblock %}
+{% block content %}
+<h1>فهرست اعضا</h1>
+
+<div class="card">
+    <form method="get" class="member-search-form" autocomplete="off">
+        <div class="member-search-form__input-wrapper">
+            <input type="text" name="q" id="member-search-input" value="{{ query }}" placeholder="جستجو بر اساس نام یا کد ملی...">
+            <div id="member-search-suggestions" class="org-search-suggestions" style="display:none;"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">جستجو</button>
+        {% if query %}<a href="{% url 'members_portal:member_list' %}" class="btn btn-secondary">پاک‌کردن</a>{% endif %}
+    </form>
+</div>
+
+<div class="table-wrapper">
+    <table class="data-table">
+        <tr>
+            <th>نام کاربری</th><th>کد ملی</th><th>شماره تماس</th><th>شماره عضویت</th>
+            <th>وضعیت پذیرش</th><th>وضعیت عضویت</th><th></th>
+        </tr>
+        {% for member in members %}
+        <tr>
+            <td>{{ member.user.get_full_name|default:member.user.username }}</td>
+            <td>{{ member.user.username }}</td>
+            <td>{{ member.mobile_number|default:"—" }}</td>
+            <td>{{ member.membership_number|default:"—" }}</td>
+            <td><span class="badge badge-{{ member.approval_status }}">{{ member.get_approval_status_display }}</span></td>
+            <td><span class="badge badge-{% if member.status == "active" %}active{% else %}inactive{% endif %}">{{ member.get_status_display }}</span></td>
+            <td><a href="{% url 'members_portal:member_detail' pk=member.pk %}" class="btn btn-warning btn-sm">مشاهده/مدیریت</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">{% include "components/empty_state.html" with empty_message="عضوی یافت نشد." %}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+    var input = document.getElementById("member-search-input");
+    var box = document.getElementById("member-search-suggestions");
+    var timer = null;
+
+    input.addEventListener("input", function () {
+        clearTimeout(timer);
+        var q = input.value.trim();
+        if (q.length < 2) { box.style.display = "none"; return; }
+        timer = setTimeout(function () {
+            fetch("{% url 'members_portal:member_search_suggestions' %}?q=" + encodeURIComponent(q))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    box.innerHTML = "";
+                    if (data.results.length === 0) { box.style.display = "none"; return; }
+                    data.results.forEach(function (item) {
+                        var a = document.createElement("a");
+                        a.href = "/management/members/" + item.pk + "/";
+                        a.className = "org-search-suggestions__item";
+                        a.textContent = item.name + " (" + item.national_code + ")";
+                        box.appendChild(a);
+                    });
+                    box.style.display = "block";
+                });
+        }, 250);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!box.contains(e.target) && e.target !== input) box.style.display = "none";
+    });
+})();
+</script>
+{% endblock %}

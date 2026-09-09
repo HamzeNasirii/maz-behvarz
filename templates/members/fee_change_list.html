@@ -1,0 +1,103 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+    <h1>درخواست‌های اصلاح/حذف حق عضویت</h1>
+    <a href="{% url 'members_fees:list' %}" class="btn btn-secondary">بازگشت به فهرست حق‌عضویت‌ها</a>
+    <div class="table-wrapper" style="margin-top: var(--space-4);">
+        <table class="data-table">
+            <tr>
+                <th>عضو</th>
+                <th>نوع</th>
+                <th>مبلغ قبلی</th>
+                <th>مبلغ جدید</th>
+                <th>پیشنهاددهنده</th>
+                <th>دلیل</th>
+                <th>وضعیت</th>
+                <th>تصمیم‌گیرنده</th>
+                <th></th>
+            </tr>
+            {% for cr in change_requests %}
+                <tr>
+                    <td>{{ cr.member.user.get_full_name|default:cr.member.user.username }}</td>
+                    <td>
+                        {% if cr.action == "delete" %}
+                            <span class="badge badge-inactive">حذف</span>
+                        {% else %}
+                            <span class="badge" style="background: var(--color-bg); color: var(--color-text-muted);">ویرایش</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cr.action == "edit" %}
+                            {{ cr.fee.amount|comma }} ریال<br>{{ cr.fee.due_date|jalali }}
+                        {% else %}
+                            <span style="color: var(--color-text-muted);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cr.action == "edit" %}
+                            {{ cr.original_amount|comma }} ریال<br>{{ cr.original_due_date|jalali }}
+                        {% else %}
+                            <span style="color: var(--color-text-muted);">حذف خواهد شد</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ cr.proposed_by.get_full_name|default:cr.proposed_by.username }}<br>
+                        {% if cr.proposer_role_label %}<span class="badge"
+                                                             style="background: var(--color-bg); color: var(--color-text-muted); font-size: var(--font-size-sm);">{{ cr.proposer_role_label }}</span>
+                            <br>{% endif %}
+                        {{ cr.created_at|jalali }}
+                    </td>
+                    <td>{{ cr.reason }}</td>
+                    <td><span
+                            class="badge badge-{% if cr.status == "approved" %}inactive{% elif cr.status == "rejected" %}active{% else %}pending{% endif %}">{{ cr.get_status_display }}</span>
+                    </td>
+                    <td>
+                        {% if cr.decided_by %}
+                            {{ cr.decided_by.get_full_name|default:cr.decided_by.username }}<br>
+                            {% if cr.decider_role_label %}<span class="badge"
+                                                                style="background: var(--color-bg); color: var(--color-text-muted); font-size: var(--font-size-sm);">{{ cr.decider_role_label }}</span>
+                                <br>{% endif %}
+                            {{ cr.decided_at|jalali }}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        {% if cr.status == "pending" %}
+                            {% if cr.proposed_by_id == request.user.id %}
+                                <form method="post" action="{% url 'members_fees:change_cancel' pk=cr.pk %}"
+                                      class="js-confirm-cancel">
+                                    {% csrf_token %}
+                                    <button class="btn btn-danger btn-sm" type="submit">انصراف</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'members_fees:change_approve' pk=cr.pk %}"
+                                      style="display:inline;">{% csrf_token %}
+                                    <button class="btn btn-primary btn-sm" type="submit">تأیید</button>
+                                </form>
+                                <form method="post" action="{% url 'members_fees:change_reject' pk=cr.pk %}"
+                                      style="display:inline;">{% csrf_token %}
+                                    <button class="btn btn-secondary btn-sm" type="submit">رد</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="9">{% include "components/empty_state.html" with empty_message="درخواستی ثبت نشده است." %}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.querySelectorAll(".js-confirm-cancel").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                if (!confirm("آیا از انصراف این درخواست مطمئن هستید؟")) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+{% endblock %}

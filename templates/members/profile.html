@@ -1,0 +1,63 @@
+{% extends "base/dashboard.html" %}
+{% load jalali_filters %}
+{% block content %}
+    <h1>پروفایل من</h1>
+    <div class="card">
+        <div style="display:flex; align-items:center; gap: var(--space-4); margin-bottom: var(--space-4);">
+            {% if profile_user.profile_picture %}
+                <img src="{{ profile_user.profile_picture.url }}" alt="تصویر پروفایل"
+                     style="width:90px; height:90px; border-radius:50%; object-fit:cover;">
+            {% else %}
+                <div style="width:90px; height:90px; border-radius:50%; background: var(--color-bg); display:flex; align-items:center; justify-content:center; font-size: var(--font-size-xl); color: var(--color-text-muted);">
+                    {{ profile_user.get_full_name|default:profile_user.username|first }}
+                </div>
+            {% endif %}
+            <div>
+                <h2 style="margin:0;">{{ profile_user.get_full_name|default:profile_user.username }}</h2>
+                {% if profile_user.nickname %}
+                    <p style="color: var(--color-primary); margin:0; font-weight:500;">{{ profile_user.nickname }}</p>
+                {% endif %}
+                <p style="color: var(--color-text-muted); margin:0;">{{ profile_user.username }}</p>
+            </div>
+        </div>
+
+        <h2 class="card__title">اطلاعات حساب کاربری</h2>
+        <table class="data-table" style="border: none;">
+            <tr>
+                <th>نام کاربری</th>
+                <td>{{ profile_user.username }}</td>
+            </tr>
+            <tr>
+                <th>نام و نام خانوادگی</th>
+                <td>{{ profile_user.get_full_name|default:"ثبت نشده" }}</td>
+            </tr>
+            <tr>
+                <th>نام نمایشی</th>
+                <td>{{ profile_user.nickname|default:"ثبت نشده" }}</td>
+            </tr>
+            <tr>
+                <th>ایمیل</th>
+                <td>{{ profile_user.email|default:"ثبت نشده" }}</td>
+            </tr>
+            <tr>
+                <th>تاریخ تولد</th>
+                <td>{{ profile_user.date_of_birth|jalali|default:"ثبت نشده" }}</td>
+            </tr>
+            {% if profile_user.member_profile %}
+                <tr>
+                    <th>شماره تماس</th>
+                    <td>{{ profile_user.member_profile.mobile_number|default:"ثبت نشده" }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <th>تاریخ عضویت در سامانه</th>
+                <td>{{ profile_user.date_joined|jalali }}</td>
+            </tr>
+        </table>
+        <a href="{% url 'members_portal:profile_edit' %}" class="btn btn-secondary">ویرایش پروفایل</a>
+        <a href="{% url 'members_portal:documents' %}" class="btn btn-secondary">ارسال مدارک</a>
+        <a href="{% url 'members_portal:bale_link' %}" class="btn btn-secondary">
+            {% if request.user.bale_chat_id %}✅ حساب بله متصل است{% else %}اتصال حساب بله{% endif %}
+        </a>
+    </div>
+{% endblock %}

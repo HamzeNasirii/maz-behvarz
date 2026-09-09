@@ -1,0 +1,406 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/document-upload.css' %}">
+    <link rel="stylesheet" href="{% static 'css/content-form.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="content-form-header">
+        <h1>{% if mode == "create" %}افزودن {{ label }}{% else %}ویرایش {{ label }}{% endif %}</h1>
+        <div style="display:flex; gap: var(--space-2);">
+            {% if content_type == "news" and mode == "edit" %}
+                <a href="{% url 'public_content_mgmt:news_gallery' pk=form.instance.pk %}" class="btn btn-secondary">مدیریت
+                    گالری تصاویر</a>
+            {% endif %}
+            <a href="{% url 'public_content_mgmt:list' content_type=content_type %}" class="btn btn-secondary">بازگشت به
+                فهرست</a>
+        </div>
+    </div>
+
+    <div class="card content-form-card">
+        {% include "components/form_errors.html" %}
+
+        <form method="post" enctype="multipart/form-data" id="content-form">
+            {% csrf_token %}
+
+            {% for field in form %}
+                {% if field.name != "start_time" and field.name != "end_time" %}
+                    {% if field.name == "start_date" or field.name == "end_date" %}
+                        <div class="content-form-field">
+                            <div style="display:flex; gap: var(--space-3);">
+                                <div style="flex:1;">
+                                    <label for="{{ field.id_for_label }}"
+                                           class="content-form-field__label">{{ field.label }}</label>
+                                    {{ field }}
+                                </div>
+                                <div style="flex:1;">
+                                    {% if field.name == "start_date" %}
+                                        <label for="{{ form.start_time.id_for_label }}"
+                                               class="content-form-field__label">{{ form.start_time.label }}</label>
+                                        {{ form.start_time }}
+                                    {% else %}
+                                        <label for="{{ form.end_time.id_for_label }}"
+                                               class="content-form-field__label">{{ form.end_time.label }}</label>
+                                        {{ form.end_time }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="content-form-field content-form-field--{{ field.field.widget.input_type|default:'text' }}">
+                            {% if field.field.widget.input_type == "checkbox" and field.name != "categories" %}
+                                <label class="content-form-field__checkbox-label">
+                                    {{ field }}
+                                    {{ field.label }}
+                                </label>
+                            {% else %}
+                                <label for="{{ field.id_for_label }}" class="content-form-field__label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}
+                                        <span class="content-form-field__required">*</span>{% endif %}
+                                </label>
+
+                                {% if field.field.widget.input_type == "file" %}
+                                    <div class="custom-file-picker">
+                                        <button type="button" class="btn btn-secondary custom-file-picker__btn"
+                                                data-target="{{ field.id_for_label }}">انتخاب
+                                            {% if field.name == "gallery_images" or field.name == "files" %}
+                                                فایل‌ها{% else %}فایل{% endif %}
+                                        </button>
+                                        <span class="custom-file-picker__filename"
+                                              data-filename-for="{{ field.id_for_label }}">
+                                        {% if field.name == "gallery_images" or field.name == "files" %}فایلی انتخاب
+                                            نشده است{% elif field.value %}فایل فعلی ثبت شده است{% else %}فایلی انتخاب
+                                            نشده است{% endif %}
+                                    </span>
+                                        {{ field }}
+                                    </div>
+                                    {% if field.value and "image" in field.field.widget.attrs.accept|default:"" or field.name == "featured_image" or field.name == "cover_image" or field.name == "image" %}
+                                        {% if field.value %}
+                                            <img src="{{ field.value.url }}" alt="پیش‌نمایش"
+                                                 class="content-form-field__image-preview"
+                                                 id="preview_{{ field.id_for_label }}">
+                                        {% else %}
+                                            <img src="" alt="" class="content-form-field__image-preview"
+                                                 id="preview_{{ field.id_for_label }}" style="display:none;">
+                                        {% endif %}
+                                    {% endif %}
+                                {% elif field.name == "categories" %}
+                                    <button type="button" class="quick-create-btn" id="quick-add-category-btn"
+                                            style="display:inline-flex; width:auto; margin-bottom: var(--space-3);">
+                                        <span class="quick-create-btn__icon">+</span>
+                                        <span>دسته‌بندی جدید</span>
+                                    </button>
+                                    <div id="categories-checkbox-list"
+                                         style="display:flex; flex-wrap:wrap; align-content:flex-start; gap: var(--space-3);">
+                                        {% for checkbox in field %}
+                                            <label style="display:flex; align-items:center; gap: var(--space-1); font-weight:normal; cursor:pointer;">
+                                                {{ checkbox.tag }}
+                                                {{ checkbox.choice_label }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                {% elif field.name == "category" %}
+                                    <div style="display:flex; gap: var(--space-2); align-items:center;">
+                                        {{ field }}
+                                        <button type="button" class="btn btn-secondary btn-sm"
+                                                id="quick-add-category-btn">
+                                            دسته‌بندی جدید
+                                        </button>
+                                    </div>
+                                {% elif field.name == "tags_input" %}
+                                    <div style="position:relative;">
+                                        {{ field }}
+                                        <div id="tag-suggestions" class="org-search-suggestions"
+                                             style="display:none;"></div>
+                                    </div>
+                                {% else %}
+                                    {{ field }}
+                                {% endif %}
+                            {% endif %}
+
+                            {% if field.help_text %}
+                                <p class="content-form-field__help">{{ field.help_text }}</p>
+                            {% endif %}
+                            {% if field.errors %}
+                                <p class="content-form-field__error">{{ field.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <div id="quick-category-modal" class="quick-modal" style="display:none;">
+                <div class="quick-modal__backdrop"></div>
+                <div class="quick-modal__box">
+                    <h3>افزودن دسته‌بندی جدید</h3>
+                    <input type="text" id="quick-category-name" placeholder="نام دسته‌بندی">
+                    <p id="quick-category-error" class="content-form-field__error" style="display:none;"></p>
+                    <div style="display:flex; gap: var(--space-2); margin-top: var(--space-3);">
+                        <button type="button" class="btn btn-primary" id="quick-category-submit">افزودن</button>
+                        <button type="button" class="btn btn-secondary" id="quick-category-cancel">انصراف</button>
+                    </div>
+                </div>
+            </div>
+            <div class="content-form-actions">
+                <button type="submit" class="btn btn-primary">ذخیره</button>
+                <a href="{% url 'public_content_mgmt:list' content_type=content_type %}" class="btn btn-secondary">انصراف</a>
+            </div>
+        </form>
+    </div>
+
+    {% if content_type == "public_document" and mode == "edit" %}
+        <div class="card">
+            <h2 class="card__title">فایل‌های ثبت‌شده</h2>
+            <table class="data-table">
+                <tr>
+                    <th>فایل</th>
+                    <th></th>
+                </tr>
+                {% if instance.file %}
+                    <tr>
+                        <td><a href="{{ instance.file.url }}" target="_blank">📄 فایل
+                            اصلی: {{ instance.file.name|slice:"-40:" }}</a></td>
+                        <td style="color: var(--color-text-muted); font-size: var(--font-size-sm);">(فایل اصلی — از این
+                            بخش قابل حذف نیست)
+                        </td>
+                    </tr>
+                {% endif %}
+                {% for att in attachments %}
+                    <tr>
+                        <td><a href="{{ att.file.url }}" target="_blank">📎 {{ att.title|default:att.file.name }}</a>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm js-delete-attachment"
+                                    data-url="{% url 'public_content_mgmt:document_attachment_delete' pk=instance.pk file_pk=att.pk %}">
+                                حذف
+                            </button>
+                        </td>
+                    </tr>
+                {% empty %}
+                    {% if not instance.file %}
+                        <tr>
+                            <td colspan="2">{% include "components/empty_state.html" with empty_message="هیچ فایلی هنوز ثبت نشده است." %}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+        <form method="post" id="delete-attachment-form" style="display:none;">{% csrf_token %}</form>
+    {% endif %}
+{% endblock %}
+{% block extra_js %}
+    <script>
+        (function () {
+            document.querySelectorAll(".custom-file-picker__btn").forEach(function (btn) {
+                var targetId = btn.dataset.target;
+                var input = document.getElementById(targetId);
+                if (!input) return;
+                input.classList.add("file-input-hidden");
+
+                var filenameSpan = document.querySelector('[data-filename-for="' + targetId + '"]');
+                var preview = document.getElementById("preview_" + targetId);
+
+                btn.addEventListener("click", function () {
+                    input.click();
+                });
+
+                input.addEventListener("change", function () {
+                    if (!input.files.length) return;
+                    if (filenameSpan) {
+                        filenameSpan.textContent = input.files.length > 1
+                            ? input.files.length + " فایل انتخاب شد"
+                            : input.files[0].name;
+                    }
+
+                    if (preview && input.files[0].type.indexOf("image") === 0) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            preview.src = e.target.result;
+                            preview.style.display = "block";
+                        };
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                });
+            });
+
+            document.querySelectorAll(".content-form-field textarea").forEach(function (textarea) {
+                textarea.style.overflowY = "hidden";
+
+                function resize() {
+                    textarea.style.height = "auto";
+                    textarea.style.height = (textarea.scrollHeight + 2) + "px";
+                }
+
+                textarea.addEventListener("input", resize);
+                resize();
+            });
+
+            document.querySelectorAll(".js-delete-attachment").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    if (confirm("آیا از حذف این فایل مطمئن هستید؟")) {
+                        var form = document.getElementById("delete-attachment-form");
+                        form.action = btn.dataset.url;
+                        form.submit();
+                    }
+                });
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            var quickBtn = document.getElementById("quick-add-category-btn");
+            if (!quickBtn) return;
+
+            var modal = document.getElementById("quick-category-modal");
+            var nameInput = document.getElementById("quick-category-name");
+            var errorBox = document.getElementById("quick-category-error");
+
+            var multiCategoriesField = document.querySelector('[name="categories"]');
+            var singleCategoryField = document.querySelector('select[name="category"]');
+
+            quickBtn.addEventListener("click", function () {
+                nameInput.value = "";
+                errorBox.style.display = "none";
+                modal.style.display = "flex";
+                nameInput.focus();
+            });
+
+            document.getElementById("quick-category-cancel").addEventListener("click", function () {
+                modal.style.display = "none";
+            });
+            document.querySelector(".quick-modal__backdrop").addEventListener("click", function () {
+                modal.style.display = "none";
+            });
+
+            document.getElementById("quick-category-submit").addEventListener("click", function () {
+                var name = nameInput.value.trim();
+                if (!name) {
+                    errorBox.textContent = "نام دسته‌بندی الزامی است.";
+                    errorBox.style.display = "block";
+                    return;
+                }
+
+                var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                var formData = new FormData();
+                formData.append("name", name);
+
+                fetch("{% url 'public_content_mgmt:quick_category_create' content_type=content_type %}", {
+                    method: "POST",
+                    headers: {"X-CSRFToken": csrfToken},
+                    body: formData,
+                })
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        if (data.error) {
+                            errorBox.textContent = data.error;
+                            errorBox.style.display = "block";
+                            return;
+                        }
+                        var categoriesListContainer = document.getElementById("categories-checkbox-list");
+                        if (categoriesListContainer) {
+                            var wrapper = document.createElement("label");
+                            wrapper.style.display = "flex";
+                            wrapper.style.alignItems = "center";
+                            wrapper.style.gap = "var(--space-1)";
+                            wrapper.style.fontWeight = "normal";
+                            wrapper.style.cursor = "pointer";
+
+                            var checkbox = document.createElement("input");
+                            checkbox.type = "checkbox";
+                            checkbox.name = "categories";
+                            checkbox.value = data.id;
+                            checkbox.checked = true;
+
+                            wrapper.appendChild(checkbox);
+                            wrapper.appendChild(document.createTextNode(" " + data.name));
+                            categoriesListContainer.appendChild(wrapper);
+                        } else if (singleCategoryField) {
+                            var option = document.createElement("option");
+                            option.value = data.id;
+                            option.textContent = data.name;
+                            option.selected = true;
+                            singleCategoryField.appendChild(option);
+                        }
+                        modal.style.display = "none";
+                    });
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            var tagInput = document.getElementById("{{ form.tags_input.id_for_label }}");
+            if (!tagInput) return;
+
+            var box = document.getElementById("tag-suggestions");
+            var timer = null;
+
+            function submitCompletedTag(name) {
+                name = name.trim();
+                if (!name) return;
+
+                var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                var formData = new FormData();
+                formData.append("name", name);
+
+                fetch("{% url 'public_content_mgmt:tag_quick_create' %}", {
+                    method: "POST",
+                    headers: {"X-CSRFToken": csrfToken},
+                    body: formData,
+                });
+            }
+
+            tagInput.addEventListener("input", function () {
+                clearTimeout(timer);
+                var parts = tagInput.value.split(/[،,]/);
+                var current = parts[parts.length - 1].trim();
+                if (current.length < 1) {
+                    box.style.display = "none";
+                    return;
+                }
+
+                timer = setTimeout(function () {
+                    fetch("{% url 'public_content_mgmt:tag_suggestions' %}?q=" + encodeURIComponent(current))
+                        .then(function (r) {
+                            return r.json();
+                        })
+                        .then(function (data) {
+                            box.innerHTML = "";
+                            if (data.results.length === 0) {
+                                box.style.display = "none";
+                                return;
+                            }
+                            data.results.forEach(function (name) {
+                                var a = document.createElement("a");
+                                a.href = "#";
+                                a.className = "org-search-suggestions__item";
+                                a.textContent = name;
+                                a.addEventListener("click", function (e) {
+                                    e.preventDefault();
+                                    parts[parts.length - 1] = " " + name;
+                                    tagInput.value = parts.join("،").trim() + "، ";
+                                    box.style.display = "none";
+                                    tagInput.focus();
+                                });
+                                box.appendChild(a);
+                            });
+                            box.style.display = "block";
+                        });
+                }, 200);
+            });
+
+            tagInput.addEventListener("keyup", function (e) {
+                if (e.key === "," || e.key === "،") {
+                    var parts = tagInput.value.split(/[،,]/);
+                    var completedTag = parts[parts.length - 2];
+                    submitCompletedTag(completedTag);
+                }
+            });
+
+            document.addEventListener("click", function (e) {
+                if (e.target !== tagInput && !box.contains(e.target)) box.style.display = "none";
+            });
+        })();
+    </script>
+{% endblock %}

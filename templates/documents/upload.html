@@ -1,0 +1,12 @@
+{% extends "base/dashboard.html" %}
+{% block content %}
+<h1>آپلود سند جدید</h1>
+<div class="card">
+    {% include "components/form_errors.html" %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">آپلود</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "website/base.html" %}
+{% load jalali_filters %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block meta_description %}{{ article.summary|default:article.title }}{% endblock %}
+{% block og_title %}{{ article.title }}{% endblock %}
+{% block og_description %}{{ article.summary|default:article.title }}{% endblock %}
+{% block content %}
+    <div id="reading-progress-bar"
+         style="position:fixed; top:0; right:0; height:3px; background:var(--color-primary); width:0%; z-index:1000; transition:width 0.1s;"></div>
+    {% include "components/breadcrumb.html" with breadcrumb_items=breadcrumb_items|default:"" %}
+    <article class="card">
+        <div class="news-detail__ids">
+            <span>{{ article.published_at|full_jalali|default:article.created_at|full_jalali }}</span>
+            <span>کد مطلب: {{ article.pk }}</span>
+            <span>
+                لینک کوتاه:
+                <a href="{% url 'public_content:news_short_redirect' pk=article.pk %}">{{ request.get_host }}{% url 'public_content:news_short_redirect' pk=article.pk %}</a>
+            </span>
+        </div>
+
+        <h1>{{ article.title }}</h1>
+
+        {% if article.categories.all %}
+            <p class="news-detail__category-badge">
+                {% for cat in article.categories.all %}{{ cat.name }}{% if not forloop.last %}، {% endif %}{% endfor %}
+            </p>
+        {% endif %}
+
+        {% if article.summary %}
+            <p class="news-detail__summary">{{ article.summary }}</p>
+        {% endif %}
+
+        <p class="news-detail__meta">
+            {% if article.author %}
+                <span>
+                    {{ article.author.get_full_name|default:article.author.username }}
+                    {% if article.author_position_display %}({{ article.author_position_display }}){% endif %}
+                </span>
+            {% endif %}
+            <span>{{ article.estimated_reading_minutes }} دقیقه مطالعه</span>
+            <span>{{ article.view_count }} بازدید</span>
+        </p>
+
+        {% if article.featured_image %}
+            <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="news-detail__featured-image">
+        {% endif %}
+
+        <div class="news-detail__content">{{ article.content|linebreaks }}</div>
+
+        {% if article.gallery_images.all %}
+            <div class="news-detail__gallery">
+                {% for img in article.gallery_images.all %}
+                    <a href="{{ img.image.url }}" target="_blank">
+                        <img src="{{ img.image.url }}" alt="{{ img.caption }}" class="news-detail__gallery-item">
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if article.tags.all %}
+            <p class="news-list-item__tags" style="margin-top: var(--space-4);">
+                {% for tag in article.tags.all %}
+                    <span class="badge badge-warning">#{{ tag.name }}</span>
+                {% endfor %}
+            </p>
+        {% endif %}
+    </article>
+
+    <div class="news-share-bar">
+        <span class="news-share-bar__label">اشتراک‌گذاری:</span>
+        <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ article.title|urlencode }}"
+           target="_blank" class="news-share-bar__btn news-share-bar__btn--telegram">تلگرام</a>
+        <a href="https://wa.me/?text={{ article.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}"
+           target="_blank" class="news-share-bar__btn news-share-bar__btn--whatsapp">واتساپ</a>
+    </div>
+
+    {% if related_news %}
+        <div class="card">
+            <h2 class="card__title">اخبار مرتبط</h2>
+            {% for item in related_news %}
+                <p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        (function () {
+            var bar = document.getElementById("reading-progress-bar");
+            if (!bar) return;
+            window.addEventListener("scroll", function () {
+                var scrollTop = window.scrollY;
+                var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                var percent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+                bar.style.width = percent + "%";
+            });
+        })();
+    </script>
+{% endblock %}

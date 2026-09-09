@@ -1,0 +1,129 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/document-upload.css' %}">
+{% endblock %}
+{% block content %}
+<h1>ویرایش پروفایل</h1>
+<div class="card">
+    {% include "components/form_errors.html" %}
+
+    <form method="post" enctype="multipart/form-data" id="profile-edit-form">
+        {% csrf_token %}
+        <div class="profile-edit-layout">
+            <div class="profile-edit-layout__fields">
+                <div class="form-group">
+                    <label for="{{ user_form.first_name.id_for_label }}">نام</label>
+                    {{ user_form.first_name }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ user_form.last_name.id_for_label }}">نام خانوادگی</label>
+                    {{ user_form.last_name }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ user_form.nickname.id_for_label }}">{{ user_form.nickname.label }}</label>
+                    {{ user_form.nickname }}
+                    <p class="form-help-text">این نام به‌جای نام کاربری برای دیگران نمایش داده می‌شود.</p>
+                </div>
+                <div class="form-group">
+                    <label for="{{ user_form.email.id_for_label }}">ایمیل</label>
+                    {{ user_form.email }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ user_form.date_of_birth.id_for_label }}">تاریخ تولد</label>
+                    {{ user_form.date_of_birth }}
+                </div>
+                {% if contact_form %}
+                <div class="form-group">
+                    <label for="{{ contact_form.mobile_number.id_for_label }}">{{ contact_form.mobile_number.label }}</label>
+                    {{ contact_form.mobile_number }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="profile-edit-layout__picture">
+                <div class="profile-picture-wrapper">
+                    {% if request.user.profile_picture %}
+                        <img src="{{ request.user.profile_picture.url }}" alt="تصویر پروفایل" class="profile-picture-wrapper__image" id="profile-picture-preview">
+                    {% else %}
+                        <div class="profile-picture-wrapper__placeholder" id="profile-picture-placeholder">
+                            {{ request.user.get_full_name|default:request.user.username|first }}
+                        </div>
+                        <img src="" alt="تصویر پروفایل" class="profile-picture-wrapper__image" id="profile-picture-preview" style="display:none;">
+                    {% endif %}
+                    {% if request.user.profile_picture %}
+                        <button type="button" class="profile-picture-wrapper__remove" id="remove-picture-btn" title="حذف تصویر">✕</button>
+                    {% endif %}
+                </div>
+                <button type="button" class="btn btn-secondary custom-file-picker__btn" data-target="{{ user_form.profile_picture.id_for_label }}">انتخاب تصویر</button>
+                {{ user_form.profile_picture }}
+            </div>
+        </div>
+
+        <div style="margin-top: var(--space-4);">
+            <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+            <a href="{% url 'members_portal:profile' %}" class="btn btn-secondary">انصراف</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    // --- پیش‌نمایش زنده‌ی تصویر انتخاب‌شده ---
+    var pictureInput = document.getElementById("{{ user_form.profile_picture.id_for_label }}");
+    pictureInput.classList.add("file-input-hidden");
+
+    var pickerBtn = document.querySelector(".custom-file-picker__btn");
+    pickerBtn.addEventListener("click", function () {
+        pictureInput.click();
+    });
+
+    pictureInput.addEventListener("change", function () {
+        if (!pictureInput.files.length) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var preview = document.getElementById("profile-picture-preview");
+            var placeholder = document.getElementById("profile-picture-placeholder");
+            preview.src = e.target.result;
+            preview.style.display = "block";
+            if (placeholder) placeholder.style.display = "none";
+        };
+        reader.readAsDataURL(pictureInput.files[0]);
+    });
+
+    // --- حذف تصویر: یک فرم کاملاً جدا و مستقل، ساخته‌شده فقط با JS ---
+    var removeBtn = document.getElementById("remove-picture-btn");
+    if (removeBtn) {
+        removeBtn.addEventListener("click", function () {
+            if (!confirm("آیا از حذف تصویر پروفایل مطمئن هستید؟")) {
+                return;
+            }
+
+            var csrfToken = document.querySelector("#profile-edit-form [name=csrfmiddlewaretoken]").value;
+
+            var tempForm = document.createElement("form");
+            tempForm.method = "POST";
+            tempForm.action = "{% url 'members_portal:profile_edit' %}";
+            tempForm.style.display = "none";
+
+            var csrfInput = document.createElement("input");
+            csrfInput.type = "hidden";
+            csrfInput.name = "csrfmiddlewaretoken";
+            csrfInput.value = csrfToken;
+            tempForm.appendChild(csrfInput);
+
+            var removeInput = document.createElement("input");
+            removeInput.type = "hidden";
+            removeInput.name = "remove_picture";
+            removeInput.value = "1";
+            tempForm.appendChild(removeInput);
+
+            document.body.appendChild(tempForm);
+            tempForm.submit();
+        });
+    }
+})();
+</script>
+{% endblock %}

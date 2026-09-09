@@ -1,0 +1,146 @@
+{% extends "website/base.html" %}
+{% load jalali_filters %}
+{% block content %}
+<div class="news-page-header">
+    <h1>اخبار انجمن</h1>
+    <a href="{% url 'news_feed' %}" class="news-page-header__rss">📡 اشتراک RSS</a>
+</div>
+
+<div class="card">
+    <form method="get" class="news-search-form">
+        <input type="text" name="q" value="{{ search }}" placeholder="جستجو در عنوان و خلاصه‌ی اخبار...">
+        <button type="submit" class="btn btn-secondary">جستجو</button>
+        {% if search %}<a href="{% url 'public_content:news_list' %}" class="btn btn-secondary">پاک‌کردن</a>{% endif %}    </form>
+
+    <div class="news-filter-bar">
+        <button type="button" class="news-filter-chip news-filter-chip--active" data-filter-category="">همه</button>
+        <button type="button" class="news-filter-chip" data-filter-latest="1">تازه‌ترین‌ها</button>
+        {% for cat in all_categories %}
+            <button type="button" class="news-filter-chip" data-filter-category="{{ cat.slug }}">{{ cat.name }}</button>
+        {% endfor %}
+    </div>
+</div>
+
+{% if featured_news %}
+<div class="card">
+    <h2 class="card__title">اخبار ویژه</h2>
+    {% for article in featured_news %}
+        <div class="news-list-item news-list-item--featured">
+            {% if article.featured_image %}
+                <a href="{{ article.get_absolute_url }}" class="news-list-item__image-link">
+                    <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="news-list-item__image">
+                </a>
+            {% else %}
+                <div class="news-list-item__image news-list-item__image--placeholder">📰</div>
+            {% endif %}
+
+            <div class="news-list-item__content">
+                <h3><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></h3>
+                <p class="news-list-item__meta">
+                    <span>{{ article.published_at|jalali|default:article.created_at|jalali }}</span>
+                    {% if article.author %}<span>{{ article.author.get_full_name|default:article.author.username }}</span>{% endif %}
+                    <span>{{ article.estimated_reading_minutes }} دقیقه مطالعه</span>
+                </p>
+                {% if article.categories.all or article.tags.all %}
+                    <p class="news-list-item__tags">
+                        {% for cat in article.categories.all %}
+                            <span class="badge" style="background: var(--color-bg); color: var(--color-text-muted);">{{ cat.name }}</span>
+                        {% endfor %}
+                        {% for tag in article.tags.all %}
+                            <span class="badge badge-warning">#{{ tag.name }}</span>
+                        {% endfor %}
+                    </p>
+                {% endif %}
+                <p>{{ article.summary }}</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+    {% for article in page_obj %}
+        <div class="news-list-item" data-categories="{% for cat in article.categories.all %}{{ cat.slug }},{% endfor %}" data-created="{{ article.created_at|date:'U' }}">
+            {% if article.featured_image %}
+                <a href="{{ article.get_absolute_url }}" class="news-list-item__image-link">
+                    <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="news-list-item__image">
+                </a>
+            {% else %}
+                <div class="news-list-item__image news-list-item__image--placeholder">📰</div>
+            {% endif %}
+
+            <div class="news-list-item__content">
+                <h3><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></h3>
+                <p class="news-list-item__meta">
+                    <span>{{ article.published_at|jalali|default:article.created_at|jalali }}</span>
+                    {% if article.author %}<span>{{ article.author.get_full_name|default:article.author.username }}</span>{% endif %}
+                    <span>{{ article.estimated_reading_minutes }} دقیقه مطالعه</span>
+                </p>
+                {% if article.categories.all or article.tags.all %}
+                    <p class="news-list-item__tags">
+                        {% for cat in article.categories.all %}
+                            <span class="badge" style="background: var(--color-bg); color: var(--color-text-muted);">{{ cat.name }}</span>
+                        {% endfor %}
+                        {% for tag in article.tags.all %}
+                            <span class="badge badge-warning">#{{ tag.name }}</span>
+                        {% endfor %}
+                    </p>
+                {% endif %}
+                <p>{{ article.summary }}</p>
+            </div>
+        </div>
+    {% empty %}
+        {% include "components/empty_state.html" with empty_message="در حال حاضر خبری برای نمایش وجود ندارد." %}
+    {% endfor %}
+</div>
+
+{% include "components/pagination.html" with page_obj=page_obj %}
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+    var chips = document.querySelectorAll(".news-filter-chip");
+    var items = document.querySelectorAll(".news-list-item:not(.news-list-item--featured)");
+    var latestChip = document.querySelector('[data-filter-latest]');
+    var activeCategory = "";
+    var latestOnly = false;
+
+    function applyFilter() {
+        var sorted = Array.prototype.slice.call(items);
+        if (latestOnly) {
+            sorted.sort(function (a, b) {
+                return parseInt(b.dataset.created, 10) - parseInt(a.dataset.created, 10);
+            });
+            var parent = sorted[0] ? sorted[0].parentElement : null;
+            sorted.forEach(function (el) { if (parent) parent.appendChild(el); });
+        }
+
+        items.forEach(function (item) {
+            var categories = item.dataset.categories || "";
+            var matches = !activeCategory || categories.indexOf(activeCategory + ",") !== -1;
+            item.style.display = matches ? "flex" : "none";
+        });
+    }
+
+    chips.forEach(function (chip) {
+        if (chip.hasAttribute("data-filter-latest")) return;
+        chip.addEventListener("click", function () {
+            latestOnly = false;
+            chips.forEach(function (c) { c.classList.remove("news-filter-chip--active"); });
+            chip.classList.add("news-filter-chip--active");
+            activeCategory = chip.dataset.filterCategory || "";
+            applyFilter();
+        });
+    });
+
+    if (latestChip) {
+        latestChip.addEventListener("click", function () {
+            latestOnly = true;
+            chips.forEach(function (c) { c.classList.remove("news-filter-chip--active"); });
+            latestChip.classList.add("news-filter-chip--active");
+            applyFilter();
+        });
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/content-form.css' %}">
+{% endblock %}
+{% block content %}
+<div class="content-form-header">
+    <h1>ثبت پرداخت حق عضویت</h1>
+</div>
+
+<div class="card content-form-card">
+    <p style="color: var(--color-text-muted); margin-top:0;">
+        عضو: <strong>{{ fee.member.user.get_full_name|default:fee.member.user.username }}</strong> —
+        مبلغ: <strong>{{ fee.amount }}</strong>
+    </p>
+    {% include "components/form_errors.html" %}
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="content-form-field">
+                <label for="{{ field.id_for_label }}" class="content-form-field__label">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="content-form-field__required">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                    <p class="content-form-field__help">{{ field.help_text }}</p>
+                {% endif %}
+                {% if field.errors %}
+                    <p class="content-form-field__error">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <div class="content-form-actions">
+            <button type="submit" class="btn btn-success">تأیید پرداخت</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

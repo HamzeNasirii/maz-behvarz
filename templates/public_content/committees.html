@@ -1,0 +1,22 @@
+{% extends "website/base.html" %}
+{% block content %}
+<h1>کمیته‌ها</h1>
+{% for committee in committees %}
+<div class="card">
+    <h2 class="card__title">{{ committee.name }}</h2>
+    {% if committee.description %}<p>{{ committee.description }}</p>{% endif %}
+    <h4>اعضا</h4>
+    <ul>
+        {% for membership in committee.memberships.all %}
+            {% if membership.is_public_visible and membership.is_active %}
+                <li>{{ membership.user.get_full_name|default:membership.user.username }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% empty %}
+<div class="card">
+    {% include "components/empty_state.html" with empty_message="در حال حاضر کمیته‌ی عمومی برای نمایش وجود ندارد." %}
+</div>
+{% endfor %}
+{% endblock %}
