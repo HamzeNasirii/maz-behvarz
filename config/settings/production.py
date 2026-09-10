@@ -4,7 +4,16 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="").split(",")
+
+def _csv_setting(name, default=""):
+    """Read a comma-separated env var and drop blank/whitespace-only items."""
+    return [item.strip() for item in config(name, default=default).split(",") if item.strip()]
+
+
+ALLOWED_HOSTS = _csv_setting(
+    "DJANGO_ALLOWED_HOSTS",
+    default="maz-behvarz.ir,www.maz-behvarz.ir",
+)
 
 DATABASES = {
     "default": {
@@ -17,11 +26,30 @@ DATABASES = {
     }
 }
 
-CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="").split(",")
+CSRF_TRUSTED_ORIGINS = _csv_setting(
+    "CSRF_TRUSTED_ORIGINS",
+    default="https://maz-behvarz.ir,https://www.maz-behvarz.ir",
+)
+
+# HTTPS is terminated by the hosting platform / Nginx before the request reaches
+# Gunicorn. Trust the standard proxy header so Django can correctly identify the
+# original request scheme when the proxy sends X-Forwarded-Proto: https.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+
+# Do not perform a second HTTP -> HTTPS redirect inside Django by default.
+# The hosting platform or the bundled Nginx config already owns that redirect.
+# This avoids ERR_TOO_MANY_REDIRECTS when TLS is terminated at a reverse proxy.
+# Set DJANGO_SECURE_SSL_REDIRECT=True only if your deployment explicitly needs
+# Django itself to enforce the redirect and your proxy forwards X-Forwarded-Proto.
+SECURE_SSL_REDIRECT = config(
+    "DJANGO_SECURE_SSL_REDIRECT",
+    default=False,
+    cast=bool,
+)
+
 SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
@@ -30,7 +58,8 @@ SECURE_HSTS_PRELOAD = True
 MIDDLEWARE = MIDDLEWARE.copy()
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
-STATIC_ROOT = BASE_DIR / "static"
+# Keep this path in sync with deploy/deploy/nginx.conf.
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -56,4 +85,3 @@ LOGGING = {
         },
     },
 }
-
