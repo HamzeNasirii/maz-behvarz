@@ -58,8 +58,16 @@ SECURE_HSTS_PRELOAD = True
 MIDDLEWARE = MIDDLEWARE.copy()
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
-# Keep this path in sync with deploy/deploy/nginx.conf.
-STATIC_ROOT = BASE_DIR / "staticfiles"
+# Static assets are collected into BASE_DIR/static.  This matches the
+# original deployment layout used by the hosted application and the bundled
+# Nginx configuration.  Override only when your hosting panel is explicitly
+# configured for a different directory.
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / config("DJANGO_STATIC_ROOT_DIR", default="static")
+
+# Be explicit so WhiteNoise always recognizes /static/... requests behind a
+# reverse proxy / PaaS router.
+WHITENOISE_STATIC_PREFIX = "/static/"
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
