@@ -1,50 +1,71 @@
 {% extends "base/dashboard.html" %}
 {% block content %}
-<h1>مدیریت عضویت</h1>
-<div class="card">
-    <p>کاربر: {{ member.user.get_full_name|default:member.user.username }}</p>
-    <p>وضعیت: <span class="badge badge-{{ member.status }}">{{ member.get_status_display }}</span></p>
+    <h1>مدیریت عضویت</h1>
+    <div class="card">
+        <p>کاربر: {{ member.user.get_full_name|default:member.user.username }}</p>
+        <p>وضعیت: <span class="badge badge-{{ member.status }}">{{ member.get_status_display }}</span></p>
 
-    <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
-        {% if member.status == "submitted" %}
-            <form method="post" action="{% url 'members_portal:membership_review' pk=member.pk %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">شروع بررسی</button></form>
-        {% endif %}
-        {% if member.status == "under_review" %}
-            <form method="post" action="{% url 'members_portal:membership_approve' pk=member.pk %}">{% csrf_token %}<button type="submit" class="btn btn-primary">تأیید و فعال‌سازی</button></form>
-            <a href="{% url 'members_portal:membership_reject' pk=member.pk %}" class="btn btn-danger">رد درخواست</a>
-        {% endif %}
-        {% if member.status == "active" %}
-            <a href="{% url 'members_portal:membership_suspend' pk=member.pk %}" class="btn btn-secondary">تعلیق</a>
-            <a href="{% url 'members_portal:membership_expire' pk=member.pk %}" class="btn btn-secondary">اعلام انقضا</a>
-            <a href="{% url 'members_portal:membership_cancel' pk=member.pk %}" class="btn btn-danger">لغو عضویت</a>
-        {% endif %}
-        {% if member.status == "suspended" %}
-            <a href="{% url 'members_portal:membership_reinstate' pk=member.pk %}" class="btn btn-primary">اعاده‌ی عضویت</a>
-            <a href="{% url 'members_portal:membership_cancel' pk=member.pk %}" class="btn btn-danger">لغو عضویت</a>
-        {% endif %}
-        {% if member.status == "expired" %}
-            <a href="{% url 'members_portal:membership_reinstate' pk=member.pk %}" class="btn btn-primary">تمدید/اعاده</a>
-        {% endif %}
+        <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+            {% if member.status == "submitted" %}
+                <form method="post" action="{% url 'members_portal:membership_review' pk=member.pk %}">{% csrf_token %}
+                    <button type="submit" class="btn btn-secondary">شروع بررسی</button>
+                </form>
+                {% if request.user.is_superuser %}
+                    <form method="post"
+                          action="{% url 'members_portal:membership_full_approve' pk=member.pk %}">{% csrf_token %}
+                        <button type="submit" class="btn btn-primary">تأیید کامل (فقط مدیر کل سیستم)</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+            {% if member.status == "under_review" %}
+                <form method="post" action="{% url 'members_portal:membership_approve' pk=member.pk %}">{% csrf_token %}
+                    <button type="submit" class="btn btn-primary">تأیید و فعال‌سازی</button>
+                </form>
+                <a href="{% url 'members_portal:membership_reject' pk=member.pk %}" class="btn btn-danger">رد
+                    درخواست</a>
+            {% endif %}
+            {% if member.status == "active" %}
+                <a href="{% url 'members_portal:membership_suspend' pk=member.pk %}" class="btn btn-secondary">تعلیق</a>
+                <a href="{% url 'members_portal:membership_expire' pk=member.pk %}" class="btn btn-secondary">اعلام
+                    انقضا</a>
+                <a href="{% url 'members_portal:membership_cancel' pk=member.pk %}" class="btn btn-danger">لغو عضویت</a>
+            {% endif %}
+            {% if member.status == "suspended" %}
+                <a href="{% url 'members_portal:membership_reinstate' pk=member.pk %}" class="btn btn-primary">اعاده‌ی
+                    عضویت</a>
+                <a href="{% url 'members_portal:membership_cancel' pk=member.pk %}" class="btn btn-danger">لغو عضویت</a>
+            {% endif %}
+            {% if member.status == "expired" %}
+                <a href="{% url 'members_portal:membership_reinstate' pk=member.pk %}" class="btn btn-primary">تمدید/اعاده</a>
+            {% endif %}
+        </div>
     </div>
-</div>
 
-<div class="card">
-    <h2 class="card__title">تاریخچه</h2>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <tr><th>از</th><th>به</th><th>عامل</th><th>تاریخ</th><th>دلیل</th></tr>
-            {% for h in history %}
-            <tr>
-                <td>{{ h.get_previous_status_display }}</td>
-                <td>{{ h.get_new_status_display }}</td>
-                <td>{{ h.actor.get_full_name|default:h.actor.username }}</td>
-                <td>{{ h.created_at|date:"Y-m-d H:i" }}</td>
-                <td>{{ h.reason|default:"—" }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td></tr>
-            {% endfor %}
-        </table>
+    <div class="card">
+        <h2 class="card__title">تاریخچه</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tr>
+                    <th>از</th>
+                    <th>به</th>
+                    <th>عامل</th>
+                    <th>تاریخ</th>
+                    <th>دلیل</th>
+                </tr>
+                {% for h in history %}
+                    <tr>
+                        <td>{{ h.get_previous_status_display }}</td>
+                        <td>{{ h.get_new_status_display }}</td>
+                        <td>{{ h.actor.get_full_name|default:h.actor.username }}</td>
+                        <td>{{ h.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ h.reason|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">{% include "components/empty_state.html" with empty_message="تاریخچه‌ای ثبت نشده است." %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
-</div>
 {% endblock %}

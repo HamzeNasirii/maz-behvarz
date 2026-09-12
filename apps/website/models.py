@@ -11,7 +11,7 @@ class MembershipApplication(models.Model):
 
     full_name = models.CharField(max_length=150)
     national_code = models.CharField(max_length=10, unique=True, db_index=True)
-    mobile_number = models.CharField(max_length=15)
+    mobile_number = models.CharField(max_length=11)
     legal_decree_file = models.FileField(
         upload_to="membership_applications/legal_decree/%Y/%m/",
         verbose_name="آخرین حکم کارگزینی",

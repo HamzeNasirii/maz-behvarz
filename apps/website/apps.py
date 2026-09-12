@@ -25,26 +25,56 @@ class WebsiteConfig(AppConfig):
         بارگذاری، انجام شود. یک فایل Marker روی دیسک از اجرای تکراری
         توسط سایر Workerها جلوگیری می‌کند.
         """
-        import os
         import subprocess
         import sys
+        import tempfile
+        from pathlib import Path
 
-        marker_path = "/tmp/startup_tasks_done"
-        if os.path.exists(marker_path):
+        marker_path = Path(tempfile.gettempdir()) / "startup_tasks_done"
+
+        if marker_path.exists():
             return
 
         try:
-            with open(marker_path, "x"):
-                pass
+            marker_path.touch(exist_ok=False)
         except FileExistsError:
             return
 
         print("=== RUNNING STARTUP TASKS (migrate + collectstatic) ===", flush=True)
 
-        result = subprocess.run([sys.executable, "manage.py", "migrate", "--noinput"])
+        result = subprocess.run(
+            [sys.executable, "manage.py", "migrate", "--noinput"]
+        )
         print(f"=== MIGRATE EXIT CODE: {result.returncode} ===", flush=True)
 
-        result = subprocess.run([sys.executable, "manage.py", "collectstatic", "--noinput"])
+        result = subprocess.run(
+            [sys.executable, "manage.py", "collectstatic", "--noinput"]
+        )
         print(f"=== COLLECTSTATIC EXIT CODE: {result.returncode} ===", flush=True)
-
+        self._ensure_superuser()
         print("=== STARTUP TASKS DONE ===", flush=True)
+
+    def _ensure_superuser(self):
+        """
+        ساخت خودکار Superuser در اولین Deploy — فقط اگر از قبل هیچ
+        Superuser‌ای در دیتابیس وجود نداشته باشد (Idempotent، بی‌خطر
+        برای Deployهای بعدی).
+        """
+        from django.contrib.auth import get_user_model
+        from django.conf import settings
+
+        User = get_user_model()
+
+        if User.objects.filter(is_superuser=True).exists():
+            print("=== SUPERUSER ALREADY EXISTS — SKIPPING ===", flush=True)
+            return
+
+        username = getattr(settings, "INITIAL_SUPERUSER_USERNAME", None)
+        password = getattr(settings, "INITIAL_SUPERUSER_PASSWORD", None)
+
+        if not username or not password:
+            print("=== NO INITIAL_SUPERUSER_USERNAME/PASSWORD SET — SKIPPING SUPERUSER CREATION ===", flush=True)
+            return
+
+        User.objects.create_superuser(username=username, password=password)
+        print(f"=== SUPERUSER '{username}' CREATED ===", flush=True)

@@ -5,7 +5,6 @@ from apps.authorization.services import Authorization
 from .models import Member
 from .serializers import MemberSerializer
 
-
 class MemberViewSet(viewsets.ReadOnlyModelViewSet):
     """
     فقط Read — ویرایش عضو از طریق Workflow تأیید (گام ۱۱) انجام
@@ -24,3 +23,5 @@ class MemberViewSet(viewsets.ReadOnlyModelViewSet):
         scoped_ids = Authorization.scope_queryset(self.request.user, base).values_list("pk", flat=True)
         combined_ids = set(own_ids) | set(scoped_ids)
         return base.filter(pk__in=combined_ids)
+
+

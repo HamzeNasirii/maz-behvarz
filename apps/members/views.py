@@ -701,3 +701,27 @@ def member_documents_view(request):
         "form": form, "member": member, "birth_certificate_pages": birth_certificate_pages,
         "locked_file_fields": locked_file_fields, "birth_certificate_locked": birth_certificate_locked,
     })
+
+
+@login_required
+def membership_full_approve_view(request, pk):
+    """
+    ⚠️ فقط برای Superuser: تأیید کامل و یک‌مرحله‌ای (Review + Approve +
+    Activate پشت‌سرهم) — برای رئیس/نایب‌رئیس/دبیر این مسیر عمداً در
+    دسترس نیست و همچنان باید مرحله‌به‌مرحله (بررسی، سپس تأیید) جلو بروند.
+    """
+    if not request.user.is_superuser:
+        raise PermissionDenied("این عملیات فقط برای مدیر کل سیستم مجاز است.")
+
+    from .services import activate_membership
+
+    member = get_object_or_404(Member, pk=pk)
+    try:
+        if member.status in ("draft", "submitted"):
+            review_membership(member=member, actor=request.user)
+        approve_membership(member=member, actor=request.user)
+        activate_membership(member=member, actor=request.user)
+        messages.success(request, "عضویت به‌طور کامل بررسی، تأیید و فعال شد.")
+    except (PermissionDenied, ValidationError) as exc:
+        messages.error(request, str(exc))
+    return redirect("members_portal:membership_management_detail", pk=member.pk)
