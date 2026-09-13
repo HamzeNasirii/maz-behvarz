@@ -631,3 +631,21 @@ def reject_single_document(*, member, actor, document_key, reason):
     setattr(member, config["rejection_field"], reason)
     member.save(update_fields=[config["approved_field"], config["rejection_field"], "updated_at"])
     return member
+
+
+@transaction.atomic
+def reset_member_password(*, member, actor):
+    """
+    ریست رمز عبور عضو به مقدار پیش‌فرض (کد ملی/نام‌کاربری) — با الزام
+    تغییر رمز در ورود بعدی، دقیقاً مشابه رفتار اولین تأیید عضویت.
+    """
+    from apps.board.permissions import is_board_leadership
+
+    if not (actor.is_staff or actor.is_superuser or is_board_leadership(actor)):
+        raise PermissionDenied("فقط دبیر، رئیس، نایب‌رئیس یا مدیر کل سیستم می‌توانند رمز عبور را ریست کنند.")
+
+    user = member.user
+    user.set_password(user.username)
+    user.must_change_password = True
+    user.save(update_fields=["password", "must_change_password"])
+    return user

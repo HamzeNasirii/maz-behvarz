@@ -37,6 +37,7 @@ urlpatterns = [
     path("management/membership/<int:pk>/cancel/", views.membership_cancel_view, name="membership_cancel"),
     path("management/members/<int:member_pk>/propose-removal/", views.removal_proposal_create_view,
          name="propose_removal"),
+    path("management/members/<int:pk>/reset-password/", views.member_reset_password_view, name="member_reset_password"),
     path("management/members/removal-proposals/", views.removal_proposal_list_view, name="removal_proposals"),
     path("management/members/removal-proposals/<int:pk>/approve/", views.removal_proposal_approve_view,
          name="removal_approve"),

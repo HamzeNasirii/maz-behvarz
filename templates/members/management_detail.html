@@ -2,6 +2,13 @@
 {% load jalali_filters %}
 {% block content %}
     <h1>جزئیات عضو</h1>
+
+    <div class="card">
+        <p>نام و نام‌خانوادگی: {{ member.user.get_full_name|default:"—" }}</p>
+        <p>شماره ملی: {{ member.user.username }}</p>
+        <p>شماره تماس: {{ member.mobile_number|default:"—" }}</p>
+    </div>
+
     <div class="card" style="background: var(--color-highlight-bg);">
         <h2 class="card__title">دسترسی سریع</h2>
         <div style="display:flex; gap: var(--space-2); flex-wrap: wrap;">
@@ -11,14 +18,13 @@
                 <a href="/admin/accounts/customuser/{{ member.user.pk }}/change/" class="btn btn-secondary">مشاهده‌ی
                     حساب
                     کاربری (Admin)</a>
+                <a href="{% url 'auth_ref:permission_list' %}" class="btn btn-secondary">فهرست مجوزها</a>
             {% endif %}
-            <a href="{% url 'auth_ref:permission_list' %}" class="btn btn-secondary">فهرست مجوزها</a>
             <a href="{% url 'auth_ref:scope_list' %}" class="btn btn-secondary">فهرست محدوده‌های دسترسی</a>
         </div>
     </div>
 
     <div class="card">
-        <p>نام: {{ member.user.get_full_name|default:member.user.username }}</p>
         <p>شماره عضویت: {{ member.membership_number|default:"—" }}</p>
         <p>وضعیت پذیرش: <span
                 class="badge badge-{{ member.approval_status }}">{{ member.get_approval_status_display }}</span></p>
@@ -29,6 +35,10 @@
             وضعیت عضویت</a>
         <a href="{% url 'members_portal:propose_removal' member_pk=member.pk %}" class="btn btn-danger">پیشنهاد حذف
             عضو</a>
+        <form method="post" action="{% url 'members_portal:member_reset_password' pk=member.pk %}" class="js-confirm-reset-password" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">ریست رمز عبور</button>
+        </form>
     </div>
 
     <div class="card">
@@ -129,10 +139,6 @@
         <input type="hidden" name="reason" id="reject-reason-input">
     </form>
 
-    <form method="post" id="reject-document-form" style="display:none;">
-        {% csrf_token %}
-        <input type="hidden" name="reason" id="reject-reason-input">
-    </form>
     <div class="card">
         <h2 class="card__title">نقش‌های فعلی این عضو</h2>
         <div class="table-wrapper">
@@ -232,6 +238,13 @@
         document.querySelectorAll(".js-confirm-delete-fee").forEach(function (form) {
             form.addEventListener("submit", function (e) {
                 if (!confirm("آیا از حذف این حق عضویت مطمئن هستید؟ این عمل قابل بازگشت نیست.")) {
+                    e.preventDefault();
+                }
+            });
+        });
+        document.querySelectorAll(".js-confirm-reset-password").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                if (!confirm("آیا از ریست رمز عبور این عضو (به کد ملی) مطمئن هستید؟")) {
                     e.preventDefault();
                 }
             });

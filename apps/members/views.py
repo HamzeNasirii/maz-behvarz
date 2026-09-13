@@ -732,3 +732,17 @@ def membership_full_approve_view(request, pk):
     except (PermissionDenied, ValidationError) as exc:
         messages.error(request, str(exc))
     return redirect("members_portal:membership_management_detail", pk=member.pk)
+
+
+@login_required
+def member_reset_password_view(request, pk):
+    from .services import reset_member_password
+
+    member = get_object_or_404(Member, pk=pk)
+    if request.method == "POST":
+        try:
+            reset_member_password(member=member, actor=request.user)
+            messages.success(request, "رمز عبور این عضو به کد ملی ریست شد و در ورود بعدی باید تغییر دهد.")
+        except PermissionDenied as exc:
+            messages.error(request, str(exc))
+    return redirect("members_portal:member_detail", pk=pk)
