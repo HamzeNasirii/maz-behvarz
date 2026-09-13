@@ -156,3 +156,22 @@ document.addEventListener("DOMContentLoaded", function () {
         if (e.target !== searchInput && !suggestionsBox.contains(e.target)) suggestionsBox.style.display = "none";
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    var navToggle = document.querySelector("[data-nav-toggle]");
+    var navLinks = document.querySelector("[data-nav-links]");
+    if (!navToggle || !navLinks) return;
+
+    navToggle.addEventListener("click", function () {
+                var isOpen = navLinks.classList.toggle("is-open");
+        navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    document.addEventListener("click", function (e) {
+        var isClickInside = navLinks.contains(e.target) || navToggle.contains(e.target);
+                if (!isClickInside && navLinks.classList.contains("is-open")) {
+            navLinks.classList.remove("is-open");
+            navToggle.setAttribute("aria-expanded", "false");
+        }
+    });
+});
