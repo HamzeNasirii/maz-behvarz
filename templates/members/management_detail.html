@@ -19,9 +19,23 @@
     </div>
 
     <div class="card">
+        {% if member.user.profile_picture %}
+            <img src="{{ member.user.profile_picture.url }}" alt="تصویر پروفایل"
+                 style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom: var(--space-3);">
+        {% endif %}
         <p>نام و نام‌خانوادگی: {{ member.user.get_full_name|default:"—" }}</p>
+        <p>نام نمایشی: {{ member.user.nickname|default:"—" }}</p>
         <p>شماره ملی: {{ member.user.username }}</p>
         <p>شماره تماس: {{ member.mobile_number|default:"—" }}</p>
+        <p>تاریخ تولد: {{ member.user.date_of_birth|jalali|default:"—" }}</p>
+        <p>سن:
+            {% if member.user.exact_age %}
+                {{ member.user.exact_age.years }} سال، {{ member.user.exact_age.months }} ماه و
+                {{ member.user.exact_age.days }} روز
+            {% else %}
+                —
+            {% endif %}
+        </p>
         <p>شماره عضویت: {{ member.membership_number|default:"—" }}</p>
         <p>وضعیت پذیرش: <span
                 class="badge badge-{{ member.approval_status }}">{{ member.get_approval_status_display }}</span></p>

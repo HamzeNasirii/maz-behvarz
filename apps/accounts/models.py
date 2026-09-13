@@ -41,6 +41,34 @@ class CustomUser(AbstractUser):
         verbose_name = "کاربر"
         verbose_name_plural = "کاربران"
 
+    @property
+    def exact_age(self):
+        """سن دقیق به سال، ماه و روز — محاسبه‌ی زنده بر پایه‌ی تاریخ امروز."""
+        if not self.date_of_birth:
+            return None
+
+        import datetime
+
+        from django.utils import timezone
+
+        today = timezone.localdate()
+        birth = self.date_of_birth
+
+        years = today.year - birth.year
+        months = today.month - birth.month
+        days = today.day - birth.day
+
+        if days < 0:
+            months -= 1
+            prev_month_last_day = (today.replace(day=1) - datetime.timedelta(days=1)).day
+            days += prev_month_last_day
+
+        if months < 0:
+            years -= 1
+            months += 12
+
+        return {"years": years, "months": months, "days": days}
+
     def __str__(self):
         return self.nickname or self.get_full_name() or self.username
 
