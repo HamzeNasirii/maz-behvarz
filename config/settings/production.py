@@ -69,6 +69,9 @@ STATIC_ROOT = BASE_DIR / config("DJANGO_STATIC_ROOT_DIR", default="static")
 # reverse proxy / PaaS router.
 WHITENOISE_STATIC_PREFIX = "/static/"
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
