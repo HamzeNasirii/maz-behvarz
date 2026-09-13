@@ -60,8 +60,11 @@ def renew_membership(*, member, new_start_date, assigned_by=None, reason=""):
 def approve_member(*, member, approved_by):
     if not Authorization.can(approved_by, "member.approve", member):
         raise PermissionDenied("این کاربر مجوز تأیید عضویت را ندارد.")
-    if member.registered_by_id and member.registered_by_id == approved_by.id:
-        raise PermissionDenied("ثبت‌کننده‌ی عضو نمی‌تواند تأییدکننده‌ی همان درخواست باشد.")
+
+    is_full_admin = approved_by.is_superuser or approved_by.is_staff
+    if not is_full_admin:
+        if member.registered_by_id and member.registered_by_id == approved_by.id:
+            raise PermissionDenied("ثبت‌کننده‌ی عضو نمی‌تواند تأییدکننده‌ی همان درخواست باشد.")
 
     member.approval_status = ApprovalStatus.APPROVED
     member.approved_by = approved_by

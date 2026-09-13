@@ -706,22 +706,29 @@ def member_documents_view(request):
 @login_required
 def membership_full_approve_view(request, pk):
     """
-    ⚠️ فقط برای Superuser: تأیید کامل و یک‌مرحله‌ای (Review + Approve +
-    Activate پشت‌سرهم) — برای رئیس/نایب‌رئیس/دبیر این مسیر عمداً در
-    دسترس نیست و همچنان باید مرحله‌به‌مرحله (بررسی، سپس تأیید) جلو بروند.
+    ⚠️ فقط برای Superuser/Staff: تأیید کامل و یک‌مرحله‌ای (Submit در
+    صورت نیاز + Review + Approve + Activate پشت‌سرهم) — برای رئیس/
+    نایب‌رئیس/دبیر این مسیر عمداً در دسترس نیست و همچنان باید
+    مرحله‌به‌مرحله جلو بروند.
     """
-    if not request.user.is_superuser:
+    if not (request.user.is_superuser or request.user.is_staff):
         raise PermissionDenied("این عملیات فقط برای مدیر کل سیستم مجاز است.")
 
-    from .services import activate_membership
+    from .services import activate_membership, submit_membership
 
     member = get_object_or_404(Member, pk=pk)
     try:
-        if member.status in ("draft", "submitted"):
+        if member.status == "draft":
+            # submit_membership عادی فقط اجازه‌ی خود عضو را می‌دهد؛
+            # اینجا مستقیم _transition را (با همان اعتبارسنجی State
+            # Machine) برای مدیر کل سیستم صدا می‌زنیم.
+            from .services import _transition
+            _transition(member=member, new_status="submitted", actor=request.user, reason="ارسال خودکار توسط مدیر کل سیستم")
+        if member.status == "submitted":
             review_membership(member=member, actor=request.user)
         approve_membership(member=member, actor=request.user)
         activate_membership(member=member, actor=request.user)
-        messages.success(request, "عضویت به‌طور کامل بررسی، تأیید و فعال شد.")
+        messages.success(request, "عضویت به‌طور کامل ارسال، بررسی، تأیید و فعال شد.")
     except (PermissionDenied, ValidationError) as exc:
         messages.error(request, str(exc))
     return redirect("members_portal:membership_management_detail", pk=member.pk)

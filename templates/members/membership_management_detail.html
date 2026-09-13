@@ -6,6 +6,12 @@
         <p>وضعیت: <span class="badge badge-{{ member.status }}">{{ member.get_status_display }}</span></p>
 
         <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+            {% if member.status == "draft" and request.user.is_superuser %}
+                <form method="post"
+                      action="{% url 'members_portal:membership_full_approve' pk=member.pk %}">{% csrf_token %}
+                    <button type="submit" class="btn btn-primary">تأیید کامل (فقط مدیر کل سیستم)</button>
+                </form>
+            {% endif %}
             {% if member.status == "submitted" %}
                 <form method="post" action="{% url 'members_portal:membership_review' pk=member.pk %}">{% csrf_token %}
                     <button type="submit" class="btn btn-secondary">شروع بررسی</button>
