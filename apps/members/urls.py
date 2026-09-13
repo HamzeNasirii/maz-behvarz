@@ -28,6 +28,8 @@ urlpatterns = [
     path("management/members/hub/", views.members_hub_view, name="hub"),
     path("management/membership/<int:pk>/review/", views.membership_review_view, name="membership_review"),
     path("management/membership/<int:pk>/approve/", views.membership_approve_view, name="membership_approve"),
+    path("management/membership/<int:pk>/full-approve/", views.membership_full_approve_view,
+         name="membership_full_approve"),
     path("management/membership/<int:pk>/reject/", views.membership_reject_view, name="membership_reject"),
     path("management/membership/<int:pk>/suspend/", views.membership_suspend_view, name="membership_suspend"),
     path("management/membership/<int:pk>/reinstate/", views.membership_reinstate_view, name="membership_reinstate"),
