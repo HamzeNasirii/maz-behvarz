@@ -186,3 +186,6 @@ CAPTCHA_FILTER_FUNCTIONS = (
 )
 CAPTCHA_LENGTH = 5
 CAPTCHA_TIMEOUT = 5  # دقیقه، قبل از انقضا
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
