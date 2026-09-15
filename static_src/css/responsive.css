@@ -39,7 +39,7 @@
         display: inline-block;
     }
 
-    .dashboard__sidebar {
+        .dashboard__sidebar {
         position: fixed;
         top: 0;
         right: 0;
@@ -47,10 +47,6 @@
         z-index: 100;
         transform: translateX(100%);
         box-shadow: var(--shadow-md);
-    }
-
-    .dashboard__sidebar.is-open {
-        transform: translateX(0);
     }
 }
 

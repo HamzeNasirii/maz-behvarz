@@ -3,6 +3,10 @@
     background-color: var(--color-primary);
     color: #fff;
     padding: var(--space-4) var(--space-6);
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: 50;
 }
 
 .site-nav {
@@ -30,8 +34,28 @@
     color: #fff;
     text-decoration: none;
     font-size: var(--font-size-sm);
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 150ms ease, opacity 150ms ease;
 }
-.site-nav a:hover { text-decoration: underline; }
+.site-nav a:hover {
+    border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+.site-nav a[aria-current="page"] {
+    border-bottom-color: #fff;
+    font-weight: 600;
+}
+
+/* گروه لینک‌های مخصوص ادمین — از بقیه‌ی لینک‌ها بصری جدا می‌شود
+   (بخش ۱۳ سند: Navigation باید بر اساس Information Architecture باشد) */
+.site-nav__admin-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-inline-start: var(--space-3);
+    margin-inline-start: var(--space-2);
+    border-inline-start: 1px solid rgba(255, 255, 255, 0.3);
+}
 
 .site-nav .btn-link {
     color: #fff;
