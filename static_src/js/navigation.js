@@ -175,3 +175,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    var sidebarNav = document.querySelector('nav[aria-label="ناوبری اصلی"]');
+    if (!sidebarNav) return;
+
+    var currentPath = window.location.pathname;
+    sidebarNav.querySelectorAll("a").forEach(function (link) {
+        var linkPath = link.getAttribute("href");
+        if (linkPath && linkPath !== "#" && currentPath === linkPath) {
+            link.setAttribute("aria-current", "page");
+        }
+    });
+});

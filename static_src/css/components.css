@@ -358,6 +358,16 @@ nav[aria-label="ناوبری اصلی"] details ul li a:hover::before {
     background: var(--color-primary);
 }
 
+nav[aria-label="ناوبری اصلی"] details ul li a[aria-current="page"] {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+nav[aria-label="ناوبری اصلی"] details ul li a[aria-current="page"]::before {
+    background: var(--color-primary);
+}
+
 .dashboard__back-link {
     display: block;
     padding: var(--space-2) var(--space-3);
