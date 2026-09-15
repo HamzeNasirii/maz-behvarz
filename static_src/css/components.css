@@ -12,7 +12,7 @@
     margin-bottom: var(--space-4);
 }
 
-/* دکمه‌ها */
+/* دکمه‌ها — طبق بخش ۹ سند: Default/Hover/Focus/Active/Disabled */
 .btn {
     display: inline-block;
     border: none;
@@ -23,6 +23,25 @@
     cursor: pointer;
     text-decoration: none;
     text-align: center;
+    transition: background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn:disabled,
+.btn.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .btn-primary {
@@ -31,7 +50,7 @@
 }
 
 .btn-primary:hover {
-    background-color: var(--color-primary-light);
+    background-color: var(--color-primary-hover);
 }
 
 .btn-secondary {
@@ -40,9 +59,38 @@
     border: 1px solid var(--color-border);
 }
 
+.btn-secondary:hover {
+    background-color: var(--color-primary-soft);
+    border-color: var(--color-primary);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1.5px solid var(--color-primary);
+}
+
+.btn-outline:hover {
+    background-color: var(--color-primary-soft);
+}
+
+.btn-ghost {
+    background-color: transparent;
+    color: var(--color-text);
+    border: none;
+}
+
+.btn-ghost:hover {
+    background-color: var(--color-bg);
+}
+
 .btn-danger {
     background-color: var(--color-danger);
     color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
 }
 
 .btn-warning {
@@ -60,7 +108,18 @@
 }
 
 .btn-success:hover {
-    opacity: 0.9;
+    opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn {
+        transition: none;
+    }
+
+    .btn:hover,
+    .btn:active {
+        transform: none;
+    }
 }
 
 .btn-sm {
@@ -498,6 +557,7 @@ nav[aria-label="ناوبری اصلی"] details ul li a:hover::before {
     padding-bottom: var(--space-3);
     border-bottom: 1px solid var(--color-border);
 }
+
 .news-detail__ids span:not(:last-child)::after {
     content: "•";
     margin-right: var(--space-3);
@@ -684,6 +744,7 @@ nav[aria-label="ناوبری اصلی"] details ul li a:hover::before {
     .member-search-form {
         flex-wrap: wrap;
     }
+
     .member-search-form__input-wrapper {
         flex-basis: 100%;
     }
@@ -729,6 +790,7 @@ nav[aria-label="ناوبری اصلی"] details ul li a:hover::before {
     font-size: inherit;
     padding: 0;
 }
+
 .btn-link-danger:hover {
     opacity: 0.8;
 }
@@ -889,7 +951,9 @@ textarea {
 
 @media (max-width: 575px) {
     .data-table thead,
-    .data-table tr:first-child { display: none; }
+    .data-table tr:first-child {
+        display: none;
+    }
 
     .data-table tr {
         display: block;
@@ -929,6 +993,7 @@ textarea {
     padding: var(--space-2) var(--space-4);
     z-index: 2000;
 }
+
 .skip-link:focus {
     right: var(--space-3);
 }
