@@ -393,14 +393,20 @@ nav[aria-label="ناوبری اصلی"] details ul li a[aria-current="page"]::be
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--color-primary-soft);
+    transition: border-color 150ms ease;
+}
+
+.topbar-user:hover .topbar-user__avatar {
+    border-color: var(--color-primary);
 }
 
 .topbar-user__avatar--placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg);
-    color: var(--color-text-muted);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
     font-size: var(--font-size-sm);
     font-weight: bold;
 }
