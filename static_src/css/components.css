@@ -1031,3 +1031,101 @@ textarea {
 .skip-link:focus {
     right: var(--space-3);
 }
+
+/* Home — لیست اخبار/رویدادها (STEP 4 سند) */
+.home-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.home-list__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: background 150ms ease, padding-right 150ms ease;
+}
+
+.home-list__item:hover {
+    background: var(--color-bg);
+    padding-right: calc(var(--space-3) + 4px);
+}
+
+.home-list__icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.home-list__date-badge {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.home-list__title {
+    flex: 1;
+}
+
+.home-list__more {
+    display: inline-block;
+    margin-top: var(--space-3);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.home-list__more:hover {
+    text-decoration: underline;
+}
+
+/* Home — گرید دسترسی سریع */
+.home-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-3);
+}
+
+.home-quick-grid__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-align: center;
+    transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.home-quick-grid__item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: var(--color-primary-soft);
+}
+
+.home-quick-grid__icon {
+    font-size: 1.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-quick-grid__item {
+        transition: none;
+    }
+    .home-quick-grid__item:hover {
+        transform: none;
+    }
+}

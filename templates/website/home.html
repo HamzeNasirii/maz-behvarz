@@ -1,4 +1,5 @@
 {% extends "website/base.html" %}
+{% load jalali_filters %}
 {% block content %}
 
     {% if hero_slides %}
@@ -48,23 +49,33 @@
         </section>
     {% endif %}
 
-    <section class="card">
+        <section class="card">
         <h2 class="card__title">آخرین اخبار</h2>
-        {% for item in latest_news %}
-            <p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
-        {% empty %}
-            {% include "components/empty_state.html" with empty_message="در حال حاضر خبری برای نمایش وجود ندارد." %}
-        {% endfor %}
-        <a href="{% url 'public_content:news_list' %}">مشاهده‌ی همه‌ی اخبار ←</a>
+        <div class="home-list">
+            {% for item in latest_news %}
+                <a href="{{ item.get_absolute_url }}" class="home-list__item">
+                    <span class="home-list__icon">📰</span>
+                    <span class="home-list__title">{{ item.title }}</span>
+                </a>
+            {% empty %}
+                {% include "components/empty_state.html" with empty_message="در حال حاضر خبری برای نمایش وجود ندارد." %}
+            {% endfor %}
+        </div>
+        <a href="{% url 'public_content:news_list' %}" class="home-list__more">مشاهده‌ی همه‌ی اخبار ←</a>
     </section>
 
     <section class="card">
         <h2 class="card__title">رویدادهای پیش‌رو</h2>
-        {% for item in upcoming_events %}
-            <p><a href="{{ item.get_absolute_url }}">{{ item.title }}</a> — {{ item.start_datetime|date:"Y-m-d" }}</p>
-        {% empty %}
-            {% include "components/empty_state.html" with empty_message="در حال حاضر رویداد پیش‌رویی وجود ندارد." %}
-        {% endfor %}
+        <div class="home-list">
+            {% for item in upcoming_events %}
+                <a href="{{ item.get_absolute_url }}" class="home-list__item">
+                    <span class="home-list__date-badge">{{ item.start_datetime|jalali }}</span>
+                    <span class="home-list__title">{{ item.title }}</span>
+                </a>
+            {% empty %}
+                {% include "components/empty_state.html" with empty_message="در حال حاضر رویداد پیش‌رویی وجود ندارد." %}
+            {% endfor %}
+        </div>
     </section>
 
     <section class="card">
@@ -74,19 +85,34 @@
         <a href="{% url 'website:about' %}">بیشتر بدانید ←</a>
     </section>
 
-    <section class="card">
+        <section class="card">
         <h2 class="card__title">دسترسی سریع</h2>
-        <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
+        <div class="home-quick-grid">
             {% if not user.is_staff and not is_approved_member %}
-                <a href="{% url 'website:membership_application' %}" class="btn btn-secondary">درخواست عضویت</a>
+                <a href="{% url 'website:membership_application' %}" class="home-quick-grid__item">
+                    <span class="home-quick-grid__icon">📝</span>
+                    <span>درخواست عضویت</span>
+                </a>
             {% endif %}
             {% if user.is_authenticated %}
-                <a href="{% url 'members_portal:dashboard' %}" class="btn btn-secondary">پنل عضویت</a>
+                <a href="{% url 'members_portal:dashboard' %}" class="home-quick-grid__item">
+                    <span class="home-quick-grid__icon">👤</span>
+                    <span>پنل عضویت</span>
+                </a>
             {% else %}
-                <a href="{% url 'login' %}" class="btn btn-secondary">ورود اعضا</a>
+                <a href="{% url 'login' %}" class="home-quick-grid__item">
+                    <span class="home-quick-grid__icon">🔑</span>
+                    <span>ورود اعضا</span>
+                </a>
             {% endif %}
-            <a href="{% url 'public_content:document_list' %}" class="btn btn-secondary">اسناد</a>
-            <a href="{% url 'website:contact' %}" class="btn btn-secondary">تماس با ما</a>
+            <a href="{% url 'public_content:document_list' %}" class="home-quick-grid__item">
+                <span class="home-quick-grid__icon">📄</span>
+                <span>اسناد</span>
+            </a>
+            <a href="{% url 'website:contact' %}" class="home-quick-grid__item">
+                <span class="home-quick-grid__icon">✉️</span>
+                <span>تماس با ما</span>
+            </a>
         </div>
     </section>
     {% if board_history %}
