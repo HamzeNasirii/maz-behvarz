@@ -18,13 +18,14 @@
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: var(--space-2);
+    padding: var(--space-2) var(--space-3);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     font-family: inherit;
     font-size: var(--font-size-base);
     background-color: var(--color-surface);
     color: var(--color-text);
+    box-sizing: border-box;
 }
 
 .form-group input:disabled,
@@ -66,9 +67,28 @@ select,
 textarea {
     color: var(--color-text);
     background-color: var(--color-surface);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 input::placeholder,
 textarea::placeholder {
     color: var(--color-text-muted);
+}
+
+/* Focus State استاندارد — طبق بخش ۹ سند، برای همه‌ی فیلدهای ورودی
+   کل پروژه، فارغ از فرم خاص (Global، نه فقط .form-group) */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    input,
+    select,
+    textarea {
+        transition: none;
+    }
 }
