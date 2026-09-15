@@ -5,11 +5,27 @@
     box-shadow: var(--shadow-sm);
     padding: var(--space-6);
     margin-bottom: var(--space-6);
+    transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
+}
+
+.card--interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-soft);
 }
 
 .card__title {
     margin-top: 0;
     margin-bottom: var(--space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card {
+        transition: none;
+    }
+    .card--interactive:hover {
+        transform: none;
+    }
 }
 
 /* دکمه‌ها — طبق بخش ۹ سند: Default/Hover/Focus/Active/Disabled */
@@ -167,9 +183,11 @@
 /* نشان وضعیت (Status Badge) */
 .badge {
     display: inline-block;
-    padding: 2px var(--space-2);
-    border-radius: var(--radius-lg);
+    padding: 3px var(--space-3);
+    border-radius: var(--radius-pill);
     font-size: var(--font-size-sm);
+    font-weight: 600;
+    line-height: 1.4;
 }
 
 .badge-pending {
