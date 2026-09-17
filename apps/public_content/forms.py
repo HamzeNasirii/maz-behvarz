@@ -11,6 +11,10 @@ class ContactMessageForm(forms.ModelForm):
             "message": forms.Textarea(attrs={"rows": 5}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["phone"].required = True
+
     def clean_message(self):
         message = self.cleaned_data["message"]
         if len(message.strip()) < 10:
