@@ -2,8 +2,29 @@ from django import template
 
 from apps.website.utils import gregorian_to_jalali
 
-register = template.Library()
 
+register = template.Library()
+from apps.website.utils import jalali_day, jalali_month_name
+
+
+@register.filter
+def jalali_day_num(value):
+    if not value:
+        return ""
+    try:
+        return jalali_day(value)
+    except (AttributeError, ValueError):
+        return value
+
+
+@register.filter
+def jalali_month(value):
+    if not value:
+        return ""
+    try:
+        return jalali_month_name(value)
+    except (AttributeError, ValueError):
+        return value
 
 @register.filter
 def jalali(value):

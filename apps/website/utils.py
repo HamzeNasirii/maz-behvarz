@@ -97,12 +97,26 @@ def jalali_weekday_name(gregorian_date):
     return PERSIAN_WEEKDAYS[gregorian_date.weekday()]
 
 
+PERSIAN_MONTHS = [
+    "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+    "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
+]
+
+
+def jalali_day(gregorian_date):
+    """فقط عدد روز شمسی — برای Badgeهای تاریخ."""
+    _, _, jd = gregorian_to_jalali(gregorian_date.year, gregorian_date.month, gregorian_date.day)
+    return jd
+
+
+def jalali_month_name(gregorian_date):
+    """فقط نام ماه شمسی — برای Badgeهای تاریخ."""
+    _, jm, _ = gregorian_to_jalali(gregorian_date.year, gregorian_date.month, gregorian_date.day)
+    return PERSIAN_MONTHS[jm - 1]
+
+
 def full_jalali_date(gregorian_date):
     """تاریخ کامل با نام روز هفته — مثل «پنج‌شنبه ۱۲ شهریور ۱۴۰۵»."""
-    PERSIAN_MONTHS = [
-        "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-        "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
-    ]
     jy, jm, jd = gregorian_to_jalali(gregorian_date.year, gregorian_date.month, gregorian_date.day)
     weekday = jalali_weekday_name(gregorian_date)
     return f"{weekday} {jd} {PERSIAN_MONTHS[jm - 1]} {jy}"

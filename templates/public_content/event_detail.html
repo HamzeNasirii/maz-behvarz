@@ -1,18 +1,36 @@
 {% extends "website/base.html" %}
-{% block title %}{{ article.title }}{% endblock %}
-{% block meta_description %}{{ article.summary|default:article.title }}{% endblock %}
-{% block og_title %}{{ article.title }}{% endblock %}
-{% block og_description %}{{ article.summary|default:article.title }}{% endblock %}
+{% load jalali_filters %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block meta_description %}{{ event.description|truncatewords:25|default:event.title }}{% endblock %}
+{% block og_title %}{{ event.title }}{% endblock %}
+{% block og_description %}{{ event.description|truncatewords:25|default:event.title }}{% endblock %}
 {% block content %}
     <article class="card">
+        <div class="event-detail__date-badge">
+            <span class="event-detail__date-day">{{ event.start_datetime|jalali_day_num }}</span>
+            <span class="event-detail__date-month">{{ event.start_datetime|jalali_month }}</span>
+        </div>
+
         <h1>{{ event.title }}</h1>
-        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">
-            از {{ event.start_datetime|date:"Y-m-d H:i" }} تا {{ event.end_datetime|date:"Y-m-d H:i" }}
-            {% if event.location %} — {{ event.location }}{% endif %}
+
+        <p class="event-detail__meta">
+            <span>{{ event.start_datetime|full_jalali }}</span>
+            <span>{{ event.start_datetime|date:"H:i" }} تا {{ event.end_datetime|date:"H:i" }}</span>
+            {% if event.location %}<span>{{ event.location }}</span>{% endif %}
         </p>
-        <div>{{ event.description|linebreaks }}</div>
-        {% if event.registration_required and event.registration_url %}
-            <a href="{{ event.registration_url }}" class="btn btn-primary">ثبت‌نام در رویداد</a>
+
+        {% if event.image %}
+            <img src="{{ event.image.url }}" alt="{{ event.title }}" class="event-detail__image">
+        {% endif %}
+
+        <div class="event-detail__content">{{ event.description|linebreaks }}</div>
+
+        {% if event.registration_required %}
+            {% if event.registration_url %}
+                <a href="{{ event.registration_url }}" class="btn btn-primary" target="_blank" rel="noopener">ثبت‌نام در رویداد</a>
+            {% else %}
+                <div class="alert alert-warning">ثبت‌نام این رویداد الزامی است؛ لطفاً برای اطلاعات بیشتر با انجمن تماس بگیرید.</div>
+            {% endif %}
         {% endif %}
     </article>
 {% endblock %}
