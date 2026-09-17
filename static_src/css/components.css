@@ -1455,3 +1455,75 @@ textarea {
     font-size: var(--font-size-base);
 }
 
+/* FAQ — Accordion (همان الگوی بصری Sidebar Details/Summary) — STEP 4 سند */
+.faq-item {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.faq-item:last-child {
+    border-bottom: none;
+}
+
+.faq-item summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
+    font-weight: 600;
+    color: var(--color-text);
+    user-select: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-item summary::after {
+    content: "+";
+    font-size: 1.25rem;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    transition: transform 200ms ease;
+}
+
+.faq-item[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.faq-item__answer {
+    padding: 0 0 var(--space-4) 0;
+    color: var(--color-text-muted);
+    line-height: 1.9;
+    animation: sidebar-group-open 0.18s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .faq-item summary::after {
+        transition: none;
+    }
+    .faq-item__answer {
+        animation: none;
+    }
+}
+
+/* Regulations — لیست ساده و خوانا */
+.regulation-card {
+    padding-bottom: var(--space-4);
+    margin-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.regulation-card:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.regulation-card__meta {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin: var(--space-1) 0 var(--space-2) 0;
+}

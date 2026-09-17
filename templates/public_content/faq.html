@@ -1,12 +1,29 @@
 {% extends "website/base.html" %}
 {% block content %}
-<h1>پرسش‌های متداول</h1>
+
+<div class="page-hero">
+    <h1>پرسش‌های متداول</h1>
+</div>
+
+{% if all_categories %}
+<div class="card">
+    <div class="news-filter-bar">
+        <a href="{% url 'public_content:faq' %}"
+           class="news-filter-chip{% if not selected_category %} news-filter-chip--active{% endif %}">همه</a>
+        {% for cat in all_categories %}
+            <a href="?category={{ cat.pk }}"
+               class="news-filter-chip{% if selected_category == cat.pk|stringformat:"s" %} news-filter-chip--active{% endif %}">{{ cat.name }}</a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <div class="card">
     {% for item in faqs %}
-        <div style="margin-bottom: var(--space-4); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border);">
-            <h3>{{ item.question }}</h3>
-            <p>{{ item.answer|linebreaks }}</p>
-        </div>
+        <details class="faq-item">
+            <summary>{{ item.question }}</summary>
+            <div class="faq-item__answer">{{ item.answer|linebreaks }}</div>
+        </details>
     {% empty %}
         {% include "components/empty_state.html" with empty_message="در حال حاضر پرسشی ثبت نشده است." %}
     {% endfor %}

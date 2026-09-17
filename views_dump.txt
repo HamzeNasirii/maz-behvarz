@@ -107,15 +107,9 @@ def regulation_detail_view(request, slug):
 
 
 def faq_view(request):
-    from .models import FAQCategory
+    faqs = selectors.get_active_faqs()
+    return render(request, "public_content/faq.html", {"faqs": faqs})
 
-    category_id = request.GET.get("category")
-    faqs = selectors.get_active_faqs(category_id=category_id or None)
-    return render(request, "public_content/faq.html", {
-        "faqs": faqs,
-        "all_categories": FAQCategory.objects.all().order_by("name"),
-        "selected_category": category_id or "",
-    })
 
 def contact_view(request):
     if request.method == "POST":

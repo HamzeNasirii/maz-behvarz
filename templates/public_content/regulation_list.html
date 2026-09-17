@@ -1,16 +1,24 @@
 {% extends "website/base.html" %}
+{% load jalali_filters %}
 {% block content %}
-<h1>قوانین و مقررات</h1>
+
+<div class="page-hero">
+    <h1>قوانین و مقررات</h1>
+</div>
+
 <div class="card">
     {% for regulation in page_obj %}
-        <div style="margin-bottom: var(--space-4); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border);">
+        <div class="regulation-card">
             <h3><a href="{{ regulation.get_absolute_url }}">{{ regulation.title }}</a></h3>
-            {% if regulation.effective_date %}<p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">تاریخ اجرا: {{ regulation.effective_date }}</p>{% endif %}
+            {% if regulation.effective_date %}
+                <p class="regulation-card__meta">تاریخ اجرا: {{ regulation.effective_date|jalali }}</p>
+            {% endif %}
             <p>{{ regulation.summary }}</p>
         </div>
     {% empty %}
         {% include "components/empty_state.html" with empty_message="در حال حاضر قانون یا مقرراتی ثبت نشده است." %}
     {% endfor %}
 </div>
+
 {% include "components/pagination.html" with page_obj=page_obj %}
 {% endblock %}
