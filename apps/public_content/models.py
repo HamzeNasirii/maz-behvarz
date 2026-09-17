@@ -258,6 +258,13 @@ class PublicDocument(TimeStampedModel):
         verbose_name_plural = "اسناد عمومی"
         ordering = ["-publication_date", "-created_at"]
 
+    @property
+    def file_extension(self):
+        import os
+        if not self.file:
+            return ""
+        return os.path.splitext(self.file.name)[1].lstrip(".").upper()
+
     def __str__(self):
         return self.title
 

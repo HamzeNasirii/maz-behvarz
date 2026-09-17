@@ -1,22 +1,54 @@
 {% extends "website/base.html" %}
+{% load jalali_filters %}
 {% block content %}
-<h1>اسناد عمومی</h1>
+
+<div class="page-hero">
+    <h1>اسناد عمومی</h1>
+</div>
+
+<div class="card">
+    <form method="get" class="news-search-form">
+        <input type="text" name="q" value="{{ search }}" placeholder="جستجو در عنوان اسناد...">
+        <button type="submit" class="btn btn-secondary">جستجو</button>
+        {% if search or selected_category %}
+            <a href="{% url 'public_content:document_list' %}" class="btn btn-secondary">پاک‌کردن</a>
+        {% endif %}
+    </form>
+
+    <div class="news-filter-bar">
+        <a href="?{% if search %}q={{ search }}{% endif %}"
+           class="news-filter-chip{% if not selected_category %} news-filter-chip--active{% endif %}">همه</a>
+        {% for cat in all_categories %}
+            <a href="?category={{ cat.slug }}{% if search %}&q={{ search }}{% endif %}"
+               class="news-filter-chip{% if selected_category == cat.slug %} news-filter-chip--active{% endif %}">{{ cat.name }}</a>
+        {% endfor %}
+    </div>
+</div>
+
 <div class="card">
     {% for document in page_obj %}
-        <div style="margin-bottom: var(--space-4); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border);">
-            <h3>{{ document.title }}</h3>
-            {% if document.category %}<p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">دسته: {{ document.category.name }}</p>{% endif %}
-            <p>{{ document.description }}</p>
-            <div style="display:flex; gap: var(--space-2); flex-wrap: wrap;">
-                <a href="{{ document.file.url }}" class="btn btn-secondary" target="_blank" rel="noopener">دانلود فایل اصلی</a>
-                {% for att in document.attachments.all %}
-                    <a href="{{ att.file.url }}" class="btn btn-secondary" target="_blank" rel="noopener">دانلود {{ att.title|default:"فایل پیوست" }}</a>
-                {% endfor %}
+        <div class="doc-card">
+            <span class="doc-card__ext-badge">{{ document.file_extension|default:"فایل" }}</span>
+            <div class="doc-card__body">
+                <h3>{{ document.title }}</h3>
+                <p class="doc-card__meta">
+                    {% if document.category %}<span>{{ document.category.name }}</span>{% endif %}
+                    {% if document.publication_date %}<span>{{ document.publication_date|jalali }}</span>{% endif %}
+                    <span>{{ document.file_size|filesizeformat }}</span>
+                </p>
+                {% if document.description %}<p>{{ document.description }}</p>{% endif %}
+                <div class="doc-card__actions">
+                    <a href="{{ document.file.url }}" class="btn btn-secondary" target="_blank" rel="noopener">دانلود فایل اصلی</a>
+                    {% for att in document.attachments.all %}
+                        <a href="{{ att.file.url }}" class="btn btn-secondary" target="_blank" rel="noopener">دانلود {{ att.title|default:"فایل پیوست" }}</a>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     {% empty %}
         {% include "components/empty_state.html" with empty_message="در حال حاضر سندی برای نمایش وجود ندارد." %}
     {% endfor %}
 </div>
+
 {% include "components/pagination.html" with page_obj=page_obj %}
 {% endblock %}

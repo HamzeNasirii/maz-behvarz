@@ -77,12 +77,19 @@ def event_detail_view(request, slug):
 
 
 def document_list_view(request):
+    from .models import DocumentCategory
+
     category_slug = request.GET.get("category")
-    queryset = selectors.get_visible_documents(category_slug=category_slug)
+    search = request.GET.get("q", "").strip()
+    queryset = selectors.get_visible_documents(category_slug=category_slug, q=search)
     paginator = Paginator(queryset, 15)
     page_obj = paginator.get_page(request.GET.get("page"))
-    return render(request, "public_content/document_list.html", {"page_obj": page_obj})
-
+    return render(request, "public_content/document_list.html", {
+        "page_obj": page_obj,
+        "all_categories": DocumentCategory.objects.all().order_by("name"),
+        "search": search,
+        "selected_category": category_slug or "",
+    })
 
 def regulation_list_view(request):
     queryset = selectors.get_published_regulations()

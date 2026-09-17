@@ -59,10 +59,12 @@ def get_event_by_slug(slug):
     return Event.objects.published().filter(slug=slug).first()
 
 
-def get_visible_documents(category_slug=None):
+def get_visible_documents(category_slug=None, q=None):
     queryset = PublicDocument.objects.visible().select_related("category")
     if category_slug:
         queryset = queryset.filter(category__slug=category_slug)
+    if q:
+        queryset = queryset.filter(title__icontains=q)
     return queryset
 
 
