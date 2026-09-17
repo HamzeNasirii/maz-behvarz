@@ -25,7 +25,22 @@ def about_view(request):
 
 
 def contact_view(request):
-    return render(request, "website/contact.html")
+    from apps.public_content.forms import ContactMessageForm
+    from apps.public_content.services import submit_contact_message
+
+    if request.method == "POST":
+        form = ContactMessageForm(request.POST)
+        if form.is_valid():
+            submit_contact_message(**form.cleaned_data)
+            messages.success(
+                request,
+                "پیام شما با موفقیت ثبت شد و توسط دبیر انجمن بررسی خواهد شد.",
+            )
+            return redirect("website:contact")
+    else:
+        form = ContactMessageForm()
+
+    return render(request, "website/contact.html", {"form": form})
 
 @ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def membership_application_view(request):
