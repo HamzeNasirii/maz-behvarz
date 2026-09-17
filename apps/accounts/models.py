@@ -68,6 +68,11 @@ class CustomUser(AbstractUser):
             months += 12
 
         return {"years": years, "months": months, "days": days}
+    def save(self, *args, **kwargs):
+        if self.profile_picture:
+            from apps.common.image_processing import compress_image_field
+            compress_image_field(self.profile_picture)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nickname or self.get_full_name() or self.username

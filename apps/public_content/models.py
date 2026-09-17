@@ -37,6 +37,14 @@ class HeroSlide(TimeStampedModel):
         verbose_name_plural = "اسلایدهای هدر"
         ordering = ["ordering", "-created_at"]
 
+        # داخل HeroSlide:
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            from apps.common.image_processing import compress_image_field
+            compress_image_field(self.image)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
@@ -130,6 +138,14 @@ class NewsArticle(TimeStampedModel):
         verbose_name_plural = "اخبار"
         ordering = ["-published_at", "-created_at"]
 
+        # داخل NewsArticle:
+
+    def save(self, *args, **kwargs):
+        if self.featured_image:
+            from apps.common.image_processing import compress_image_field
+            compress_image_field(self.featured_image)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
@@ -184,6 +200,14 @@ class Event(TimeStampedModel):
                 name="event_end_after_start",
             ),
         ]
+
+        # داخل Event:
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            from apps.common.image_processing import compress_image_field
+            compress_image_field(self.image)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -245,6 +269,7 @@ class PublicDocument(TimeStampedModel):
                 pass
         super().save(*args, **kwargs)
 
+
 class PublicDocumentFile(models.Model):
     document = models.ForeignKey(
         PublicDocument, on_delete=models.CASCADE, related_name="attachments"
@@ -269,6 +294,7 @@ class PublicDocumentFile(models.Model):
 
     def __str__(self):
         return self.title or f"فایل {self.document} ({self.pk})"
+
 
 class Regulation(TimeStampedModel):
     title = models.CharField(max_length=200)
@@ -352,8 +378,6 @@ class ContactMessage(TimeStampedModel):
         return f"{self.subject} — {self.name}"
 
 
-
-
 class NewsImage(models.Model):
     news_article = models.ForeignKey(
         "NewsArticle", on_delete=models.CASCADE, related_name="gallery_images"
@@ -366,6 +390,14 @@ class NewsImage(models.Model):
         verbose_name = "تصویر گالری خبر"
         verbose_name_plural = "تصاویر گالری خبر"
         ordering = ["created_at"]
+
+        # داخل NewsImage:
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            from apps.common.image_processing import compress_image_field
+            compress_image_field(self.image)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"تصویر {self.news_article} ({self.pk})"
