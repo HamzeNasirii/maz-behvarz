@@ -475,7 +475,7 @@ nav[aria-label="ناوبری اصلی"] details ul li a[aria-current="page"]::be
 
 .news-filter-chip {
     padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-pill);
+    border-radius: 999px;
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-text);
@@ -546,7 +546,7 @@ nav[aria-label="ناوبری اصلی"] details ul li a[aria-current="page"]::be
     text-decoration: none;
     border: 1px solid var(--color-border);
     padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-pill);
+    border-radius: 999px;
 }
 
 .news-page-header__rss:hover {
@@ -578,56 +578,7 @@ nav[aria-label="ناوبری اصلی"] details ul li a[aria-current="page"]::be
     margin-right: var(--space-2);
     color: var(--color-border);
 }
-/* Hover ظریف روی هر ردیف خبر — کل ردیف عملاً قابل‌کلیک است */
-.news-list-item {
-    transition: background 150ms ease, padding-right 150ms ease;
-    border-radius: var(--radius-md);
-}
 
-.news-list-item:hover {
-    background: var(--color-bg);
-    padding-right: var(--space-2);
-}
-
-/* برجسته‌سازی واقعی «اخبار ویژه» — تا امروز این کلاس بدون استایل بود */
-.news-list-item--featured {
-    background: var(--color-primary-soft);
-    border: 1px solid var(--color-primary);
-    border-radius: var(--radius-md);
-    padding: var(--space-3);
-    margin-bottom: var(--space-3);
-}
-
-.news-list-item--featured:hover {
-    background: var(--color-primary-soft);
-}
-
-.news-list-item--featured .news-list-item__image,
-.news-list-item--featured .news-list-item__image--placeholder {
-    width: 96px;
-    height: 96px;
-}
-
-.news-list-item__featured-badge {
-    display: inline-block;
-    background: var(--color-primary);
-    color: #fff;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    padding: 2px var(--space-2);
-    border-radius: var(--radius-pill);
-    margin-bottom: var(--space-1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .news-list-item,
-    .news-filter-chip {
-        transition: none;
-    }
-    .news-list-item:hover {
-        padding-right: var(--space-3);
-    }
-}
 
 .news-detail__ids {
     display: flex;
