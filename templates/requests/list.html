@@ -1,45 +1,46 @@
 {% extends "base/dashboard.html" %}
+{% load request_filters %}
 {% block content %}
+
+<div class="page-hero">
     <h1>درخواست‌های من</h1>
-    <a href="{% url 'requests_portal:create' %}" class="btn btn-primary">ایجاد درخواست جدید</a>
+</div>
 
-    <div class="card">
-        <form method="get">
-            <div style="display:flex; gap: var(--space-3); flex-wrap: wrap; align-items:end;">
-                <div class="form-group">{{ filter_form.status.label_tag }} {{ filter_form.status }}</div>
-                <div class="form-group">{{ filter_form.request_type.label_tag }} {{ filter_form.request_type }}</div>
-                <div class="form-group">{{ filter_form.q.label_tag }} {{ filter_form.q }}</div>
-                <div class="form-group">
-                    <label style="visibility:hidden; display:block;">اعمال</label>
-                    <button type="submit" class="btn btn-secondary">اعمال فیلتر</button>
-                </div>
-            </div>
-        </form>
-    </div>
+<a href="{% url 'requests_portal:create' %}" class="btn btn-primary">ایجاد درخواست جدید</a>
 
-    <div class="table-wrapper">
-        <table class="data-table">
+<div class="card">
+    <form method="get" class="request-filter-form">
+        <div class="form-group">{{ filter_form.status.label_tag }} {{ filter_form.status }}</div>
+        <div class="form-group">{{ filter_form.request_type.label_tag }} {{ filter_form.request_type }}</div>
+        <div class="form-group">{{ filter_form.q.label_tag }} {{ filter_form.q }}</div>
+        <div class="form-group">
+            <label class="request-filter-form__hidden-label">اعمال</label>
+            <button type="submit" class="btn btn-secondary">اعمال فیلتر</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-wrapper">
+    <table class="data-table">
+        <tr>
+            <th>عنوان</th>
+            <th>نوع</th>
+            <th>وضعیت</th>
+            <th></th>
+        </tr>
+        {% for r in page_obj %}
             <tr>
-                <th>عنوان</th>
-                <th>نوع</th>
-                <th>وضعیت</th>
-                <th></th>
+                <td>{{ r.title }}</td>
+                <td>{{ r.get_request_type_display }}</td>
+                <td><span class="badge badge-{{ r.status|request_status_badge }}">{{ r.get_status_display }}</span></td>
+                <td><a href="{% url 'requests_portal:detail' pk=r.pk %}">مشاهده</a></td>
             </tr>
-            {% for r in page_obj %}
-                <tr>
-                    <td>{{ r.title }}</td>
-                    <td>{{ r.get_request_type_display }}</td>
-                    <td><span
-                            class="badge badge-{% if r.status == "completed" %}active{% else %}inactive{% endif %}">{{ r.get_status_display }}</span>
-                    </td>
-                    <td><a href="{% url 'requests_portal:detail' pk=r.pk %}">مشاهده</a></td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="4">{% include "components/empty_state.html" with empty_message="در حال حاضر درخواستی ثبت نشده است." %}</td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
-    {% include "components/pagination.html" with page_obj=page_obj %}
+        {% empty %}
+            <tr>
+                <td colspan="4">{% include "components/empty_state.html" with empty_message="در حال حاضر درخواستی ثبت نشده است." %}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{% include "components/pagination.html" with page_obj=page_obj %}
 {% endblock %}
