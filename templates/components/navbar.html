@@ -1,10 +1,12 @@
 {% load static %}
 <nav class="site-nav">
     <a href="{% url 'website:home' %}" class="site-nav__brand">انجمن صنفی بهورزان مازندران</a>
-        <div class="site-nav__links" data-nav-links>
-        <a href="{% url 'website:home' %}" {% if request.resolver_match.url_name == "home" %}aria-current="page"{% endif %}>خانه</a>
+    <div class="site-nav__links" data-nav-links>
+        <a href="{% url 'website:home' %}"
+           {% if request.resolver_match.url_name == "home" %}aria-current="page"{% endif %}>خانه</a>
         <a href="{% url 'website:about' %}">درباره‌ی انجمن</a>
         <a href="{% url 'website:contact' %}">تماس با ما</a>
+        <a href="{% url 'public_content:board' %}">هیئت‌مدیره</a>
         {% if not user.is_staff and not is_approved_member %}
             <a href="{% url 'website:membership_application' %}">درخواست عضویت</a>
         {% endif %}
