@@ -17,8 +17,8 @@
                 <label class="required">{{ form.captcha.label }}</label>
                 <div style="display:flex; align-items:center; gap: var(--space-2);">
                     <div id="captcha-image-wrapper">{{ form.captcha }}</div>
-{#                    <button type="button" id="captcha-refresh-btn" class="btn btn-secondary btn-sm">تولید تصویر جدید#}
-{#                    </button>#}
+                    {#                    <button type="button" id="captcha-refresh-btn" class="btn btn-secondary btn-sm">تولید تصویر جدید#}
+                    {#                    </button>#}
                 </div>
                 {% if form.captcha.errors %}<span class="form-error-text">{{ form.captcha.errors.0 }}</span>{% endif %}
             </div>
@@ -28,7 +28,12 @@
             <p class="form-error-text">{{ form.non_field_errors.0 }}</p>
         {% endif %}
         <p style="text-align:center; margin-top: var(--space-4);">
-            <a href="{% url 'accounts:bale_reset_request' %}">رمز عبور خود را فراموش کرده‌اید؟</a>
+            <a href="{% url 'accounts:bale_reset_request' %}">بازیابی رمز عبور از طریق بله</a>
+            <br>
+            <a href="{% url 'password_reset' %}"
+               style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+                یا بازیابی از طریق ایمیل
+            </a>
         </p>
     </div>
 {% endblock %}

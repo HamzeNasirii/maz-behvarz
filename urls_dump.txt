@@ -1,0 +1,120 @@
+1:"""
+2:URL configuration for config project.
+3:
+4:The `urlpatterns` list routes URLs to views. For more information please see:
+5:    https://docs.djangoproject.com/en/6.1/topics/http/urls/
+6:Examples:
+7:Function views
+8:    1. Add an import:  from my_app import views
+9:    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+10:Class-based views
+11:    1. Add an import:  from other_app.views import Home
+12:    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+13:Including another URLconf
+14:    1. Import the include() function: from django.urls import include, path
+15:    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+16:"""
+17:from django.contrib import admin
+18:from django.contrib.auth import views as auth_views
+19:from django.contrib.sitemaps.views import sitemap
+20:from django.urls import path, include
+21:from django.conf import settings
+22:from django.conf.urls.static import static
+23:
+24:from apps.accounts.forms import CaptchaAuthenticationForm
+25:from apps.authorization.admin_dashboard import pending_requests_view
+26:from apps.public_content.sitemaps import (
+27:    AnnouncementSitemap,
+28:    EventSitemap,
+29:    NewsSitemap,
+30:    RegulationSitemap,
+31:    StaticViewSitemap,
+32:)
+33:from apps.public_content.views import robots_txt_view
+34:
+35:from . import views
+36:from apps.public_content.feeds import LatestNewsFeed
+37:sitemaps = {
+38:    "news": NewsSitemap,
+39:    "announcements": AnnouncementSitemap,
+40:    "events": EventSitemap,
+41:    "regulations": RegulationSitemap,
+42:    "static_src": StaticViewSitemap,
+43:}
+44:
+45:urlpatterns = [
+46:    path("admin/pending-requests/", pending_requests_view, name="pending_requests"),
+47:    path("admin/reports/", include("apps.reports.urls")),
+48:    path("admin/", admin.site.urls),
+49:    path("captcha/", include("captcha.urls")),
+50:    path("health/", views.health_check_view, name="health_check"),
+51:    path("api/organization/", include("apps.organization.urls")),
+52:    path("api/v1/", include("apps.api.urls")),
+53:
+54:    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
+55:    path("news/feed/", LatestNewsFeed(), name="news_feed"),
+56:    path("robots.txt", robots_txt_view, name="robots_txt"),
+57:    path("", include("apps.accounts.urls")),
+58:    path("login/", auth_views.LoginView.as_view(
+59:        template_name="registration/login.html",
+60:        authentication_form=CaptchaAuthenticationForm,
+61:    ), name="login"),    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+62:
+63:    path(
+64:        "password-reset/",
+65:        auth_views.PasswordResetView.as_view(
+66:            template_name="registration/password_reset_form.html",
+67:            email_template_name="registration/password_reset_email.html",
+68:            subject_template_name="registration/password_reset_subject.txt",
+69:            success_url="/password-reset/done/",
+70:        ),
+71:        name="password_reset",
+72:    ),
+73:    path(
+74:        "password-reset/done/",
+75:        auth_views.PasswordResetDoneView.as_view(
+76:            template_name="registration/password_reset_done.html"
+77:        ),
+78:        name="password_reset_done",
+79:    ),
+80:    path(
+81:        "password-reset-confirm/<uidb64>/<token>/",
+82:        auth_views.PasswordResetConfirmView.as_view(
+83:            template_name="registration/password_reset_confirm.html",
+84:            success_url="/password-reset-complete/",
+85:        ),
+86:        name="password_reset_confirm",
+87:    ),
+88:    path(
+89:        "password-reset-complete/",
+90:        auth_views.PasswordResetCompleteView.as_view(
+91:            template_name="registration/password_reset_complete.html"
+92:        ),
+93:        name="password_reset_complete",
+94:    ),
+95:
+96:    path("", include("apps.members.urls")),
+97:    path("", include("apps.members.fee_urls")),
+98:    path("", include("apps.employment.urls")),
+99:    path("", include("apps.authorization.reference_urls")),
+100:    path("", include("apps.authorization.urls")),
+101:    path("", include("apps.forums.urls")),
+102:    path("", include("apps.committees.urls")),
+103:    path("", include("apps.board.urls")),
+104:    path("", include("apps.documents.urls")),
+105:    path("", include("apps.notifications.urls")),
+106:    path("", include("apps.requests.urls")),
+107:    path("", include("apps.requests.management_urls")),
+108:    path("", include("apps.authorization.pending_urls")),
+109:    path("", include("apps.organization.management_urls")),
+110:    path("", include("apps.public_content.management_urls")),
+111:    path("", include("apps.public_content.urls")),
+112:    path("", include("apps.website.urls")),
+113:]
+114:
+115:handler400 = "config.views.custom_400"
+116:handler403 = "config.views.custom_403"
+117:handler404 = "config.views.custom_404"
+118:handler500 = "config.views.custom_500"
+119:if settings.DEBUG:
+120:    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
