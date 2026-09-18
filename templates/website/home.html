@@ -49,7 +49,7 @@
         </section>
     {% endif %}
 
-        <section class="card">
+    <section class="card">
         <h2 class="card__title">آخرین اخبار</h2>
         <div class="home-list">
             {% for item in latest_news %}
@@ -85,7 +85,7 @@
         <a href="{% url 'website:about' %}">بیشتر بدانید ←</a>
     </section>
 
-        <section class="card">
+    <section class="card">
         <h2 class="card__title">دسترسی سریع</h2>
         <div class="home-quick-grid">
             {% if not user.is_staff and not is_approved_member %}
@@ -118,34 +118,7 @@
     {% if board_history %}
         <section class="card">
             <h2 class="card__title">تاریخچه‌ی هیئت‌مدیره</h2>
-            {% for period in board_history %}
-                <div style="margin-bottom: var(--space-6);">
-                    <h3>دوره‌ی {{ period.period_number }} — {{ period.board.name }}</h3>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-3);">
-                        {% for membership in period.memberships %}
-                            <div class="card" style="text-align:center;">
-                                {% if membership.user.profile_picture %}
-                                    <img src="{{ membership.user.profile_picture.url }}" alt=""
-                                         style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin: 0 auto var(--space-2);">
-                                {% else %}
-                                    <div style="width:80px; height:80px; border-radius:50%; background: var(--color-bg); display:flex; align-items:center; justify-content:center; font-size:24px; margin: 0 auto var(--space-2);">
-                                        {{ membership.user.get_full_name|default:membership.user.username|first }}
-                                    </div>
-                                {% endif %}
-                                <p style="font-weight:bold; margin: 0;">{{ membership.user.get_full_name|default:membership.user.username }}</p>
-                                <p style="color: var(--color-primary); font-size: var(--font-size-sm); margin: var(--space-1) 0;">{{ membership.get_position_display }}</p>
-                                {% if membership.user.member_profile.mobile_number %}
-                                    <p style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin:0;">{{ membership.user.member_profile.mobile_number }}</p>
-                                {% endif %}
-                                {% if membership.user.member_profile.years_of_service is not None %}
-                                    <p style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin:0;">{{ membership.user.member_profile.years_of_service }}
-                                        سال سابقه</p>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endfor %}
+            {% include "includes/board_history.html" %}
         </section>
     {% endif %}
 {% endblock %}

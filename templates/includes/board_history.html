@@ -1,0 +1,36 @@
+{% load jalali_filters %}
+{% for period in board_history %}
+    <div class="board-period">
+        <h3 class="board-period__title">دوره‌ی {{ period.period_number }} — {{ period.board.name }}</h3>
+        <p class="board-period__dates">
+            از {{ period.board.start_date|jalali }} تا {{ period.board.end_date|jalali|default:"تاکنون" }}
+        </p>
+        {% if period.board.description %}
+            <p class="board-period__description">{{ period.board.description }}</p>
+        {% endif %}
+        <div class="board-period__grid">
+            {% for membership in period.memberships %}
+                <div class="card board-member-card">
+                    {% if membership.user.profile_picture %}
+                        <img src="{{ membership.user.profile_picture.url }}" alt="" class="board-member-card__avatar">
+                    {% else %}
+                        <div class="board-member-card__avatar-placeholder">
+                            {{ membership.user.get_full_name|default:membership.user.username|first }}
+                        </div>
+                    {% endif %}
+                    <p class="board-member-card__name">{{ membership.user.get_full_name|default:membership.user.username }}</p>
+                    <p class="board-member-card__position">{{ membership.get_position_display }}</p>
+                    {% if membership.user.email %}
+                        <p class="board-member-card__meta">{{ membership.user.email }}</p>
+                    {% endif %}
+                    {% if membership.user.member_profile.mobile_number %}
+                        <p class="board-member-card__meta">{{ membership.user.member_profile.mobile_number }}</p>
+                    {% endif %}
+                    {% if membership.user.member_profile.years_of_service is not None %}
+                        <p class="board-member-card__meta">{{ membership.user.member_profile.years_of_service }} سال سابقه</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}

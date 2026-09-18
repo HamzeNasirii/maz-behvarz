@@ -1818,3 +1818,76 @@ textarea {
 .inline-form {
     display: inline;
 }
+
+/* هیئت‌مدیره — کارت معرفی عضو هر دوره — Reuse در Home و /board/ */
+.board-period {
+    margin-bottom: var(--space-6);
+}
+
+.board-period:last-child {
+    margin-bottom: 0;
+}
+
+.board-period__title {
+    margin-bottom: var(--space-2);
+}
+
+.board-period__dates {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin: 0 0 var(--space-1);
+}
+
+.board-period__description {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin: 0 0 var(--space-3);
+}
+
+.board-period__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-4);
+}
+
+.board-member-card {
+    text-align: center;
+}
+
+.board-member-card__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto var(--space-2);
+    display: block;
+}
+
+.board-member-card__avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto var(--space-2);
+}
+
+.board-member-card__name {
+    font-weight: bold;
+    margin: 0;
+}
+
+.board-member-card__position {
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    margin: var(--space-1) 0;
+}
+
+.board-member-card__meta {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin: 0;
+}

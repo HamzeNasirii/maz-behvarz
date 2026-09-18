@@ -152,17 +152,16 @@ def search_view(request):
 
 def board_view(request):
     """
-    طبق STEP 14 سند: از مدل BoardMembership موجود استفاده می‌شود،
-    نه یک مدل مستقل جدید. فقط رکوردهای Public + Active نمایش داده می‌شوند.
+    طبق STEP 14 سند: از مدل BoardMembership موجود استفاده می‌شود.
+    از فاز ۳۱ به بعد، Board (دوره) هم در نظر گرفته می‌شود؛ همان
+    Selector مشترک public_board_history() که در Home هم استفاده
+    می‌شود، Reuse شده — بدون Query تکراری.
     """
-    from apps.board.models import BoardMembership
+    from apps.board.selectors import public_board_history
 
-    memberships = (
-        BoardMembership.objects.filter(is_active=True, is_public_visible=True)
-        .select_related("user")
-        .order_by("position", "start_date")
-    )
-    return render(request, "public_content/board.html", {"memberships": memberships})
+    return render(request, "public_content/board.html", {
+        "board_history": public_board_history(),
+    })
 
 
 def committees_view(request):
