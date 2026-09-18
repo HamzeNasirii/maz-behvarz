@@ -4,7 +4,9 @@
     <link rel="stylesheet" href="{% static 'css/document-upload.css' %}">
 {% endblock %}
 {% block content %}
-    <h1>ارسال مدارک</h1>
+    <div class="page-hero">
+        <h1>ارسال مدارک</h1>
+    </div>
     <div class="card">
         <p style="color: var(--color-text-muted);">در صورت تمایل، می‌توانید در هر زمان مناسب، مدارک زیر را ارسال یا
             به‌روزرسانی کنید.</p>
@@ -31,7 +33,7 @@
                     </div>
                 {% endif %}
 
-                <div class="custom-file-picker">
+                <div class="custom-file-picker" data-input="id_legal_decree_file">
                     <button type="button" class="btn btn-secondary custom-file-picker__btn"
                             data-target="id_legal_decree_file">انتخاب فایل
                     </button>
@@ -201,6 +203,33 @@
                         document.getElementById("remove_field_input").value = "birth_page:" + btn.dataset.pk;
                         document.getElementById("remove-doc-form").submit();
                     }
+                });
+            });
+
+            document.querySelectorAll(".custom-file-picker[data-input]").forEach(function (wrapper) {
+                var input = document.getElementById(wrapper.dataset.input);
+                if (!input) return;
+
+                ["dragenter", "dragover"].forEach(function (evt) {
+                    wrapper.addEventListener(evt, function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        wrapper.classList.add("custom-file-picker--dragover");
+                    });
+                });
+
+                ["dragleave", "drop"].forEach(function (evt) {
+                    wrapper.addEventListener(evt, function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        wrapper.classList.remove("custom-file-picker--dragover");
+                    });
+                });
+
+                wrapper.addEventListener("drop", function (e) {
+                    if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+                    input.files = e.dataTransfer.files;
+                    input.dispatchEvent(new Event("change"));
                 });
             });
         })();
