@@ -1657,3 +1657,52 @@ textarea {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
 }
+
+
+/* پروفایل من — Header با تصویر/آواتار — STEP 6 سند */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.profile-header__avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.profile-header__avatar-placeholder {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xl);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+}
+
+.profile-header__name {
+    margin: 0;
+}
+
+.profile-header__nickname {
+    color: var(--color-primary);
+    margin: 0;
+    font-weight: 500;
+}
+
+.profile-header__username {
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.profile-info-table {
+    border: none;
+}
