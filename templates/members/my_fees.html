@@ -1,14 +1,18 @@
 {% extends "base/dashboard.html" %}
 {% load jalali_filters %}
 {% block content %}
-<h1>حق‌های عضویت من</h1>
+
+<div class="page-hero">
+    <h1>حق‌های عضویت من</h1>
+</div>
+
 <div class="card">
     <div class="table-wrapper">
         <table class="data-table">
             <tr><th>مبلغ</th><th>سررسید</th><th>وضعیت</th><th></th></tr>
             {% for fee in fees %}
             <tr>
-                <td>{{ fee.amount }} ریال</td>
+                <td>{{ fee.amount|comma }} ریال</td>
                 <td>{{ fee.due_date|jalali }}</td>
                 <td><span class="badge badge-{% if fee.payment_status == "paid" %}active{% else %}inactive{% endif %}">{{ fee.get_payment_status_display }}</span></td>
                 <td>
