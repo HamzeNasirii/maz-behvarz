@@ -16,11 +16,6 @@ from .services import approve_member_removal, propose_member_removal, reject_mem
 
 @login_required
 def portal_dashboard_view(request):
-    """
-    این View همیشه فقط پروفایل خود کاربر لاگین‌شده را نشان می‌دهد،
-    پس نیازی به عبور از Authorization Engine نیست — مالکیت در همین
-    کوئری (request.user.member_profile) تضمین شده است.
-    """
     if request.user.is_staff or request.user.is_superuser:
         return redirect("reports:dashboard")
 
@@ -30,8 +25,10 @@ def portal_dashboard_view(request):
         member = None
 
     active_period = None
+    birth_certificate_pages = None
     if member is not None:
         active_period = member.membership_periods.filter(is_active=True).order_by("-start_date").first()
+        birth_certificate_pages = member.birth_certificate_pages.all()
 
     active_employments = (
         EmploymentAssignment.objects.for_user(request.user)
@@ -53,11 +50,11 @@ def portal_dashboard_view(request):
         {
             "member": member,
             "active_period": active_period,
+            "birth_certificate_pages": birth_certificate_pages,
             "active_employments": active_employments,
             "active_roles": active_roles,
         },
     )
-
 
 @login_required
 def portal_employment_history_view(request):
