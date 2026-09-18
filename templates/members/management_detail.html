@@ -1,300 +1,249 @@
 {% extends "base/dashboard.html" %}
 {% load jalali_filters %}
 {% block content %}
-        <div class="card" style="background: var(--color-highlight-bg);">
-        <h2 class="card__title">دسترسی سریع</h2>
-        <div style="display:flex; gap: var(--space-2); flex-wrap: wrap;">
-            <a href="{% url 'roles:management_list' %}?ref={{ member_user_ref }}" class="btn btn-primary">تخصیص نقش /
-                مشاهده‌ی نقش‌های این فرد</a>
-            {% if user.is_staff %}
-                <a href="/admin/accounts/customuser/{{ member.user.pk }}/change/" class="btn btn-secondary">مشاهده‌ی
-                    حساب
-                    کاربری (Admin)</a>
-                <a href="{% url 'auth_ref:permission_list' %}" class="btn btn-secondary">فهرست مجوزها</a>
-            {% endif %}
-            <a href="{% url 'auth_ref:scope_list' %}" class="btn btn-secondary">فهرست محدوده‌های دسترسی</a>
-        </div>
+
+<div class="card quick-access-card">
+    <h2 class="card__title">دسترسی سریع</h2>
+    <div class="quick-access-card__actions">
+        <a href="{% url 'roles:management_list' %}?ref={{ member_user_ref }}" class="btn btn-primary">تخصیص نقش / مشاهده‌ی نقش‌های این فرد</a>
+        {% if user.is_staff %}
+            <a href="/admin/accounts/customuser/{{ member.user.pk }}/change/" class="btn btn-secondary">مشاهده‌ی حساب کاربری (Admin)</a>
+            <a href="{% url 'auth_ref:permission_list' %}" class="btn btn-secondary">فهرست مجوزها</a>
+        {% endif %}
+        <a href="{% url 'auth_ref:scope_list' %}" class="btn btn-secondary">فهرست محدوده‌های دسترسی</a>
     </div>
+</div>
 
+<div class="page-hero">
     <h1>جزئیات عضو</h1>
+</div>
 
+<div class="card">
+    <div class="member-detail-header">
+        {% if member.user.profile_picture %}
+            <img src="{{ member.user.profile_picture.url }}" alt="تصویر پروفایل" class="member-detail-header__avatar">
+        {% else %}
+            <div class="member-detail-header__avatar-placeholder">
+                {{ member.user.get_full_name|default:member.user.username|first }}
+            </div>
+        {% endif %}
 
-    <div class="card">
-        <div style="display:flex; gap: var(--space-5); flex-wrap:wrap; align-items:flex-start; margin-bottom: var(--space-4);">
-            {% if member.user.profile_picture %}
-                <img src="{{ member.user.profile_picture.url }}" alt="تصویر پروفایل"
-                     style="width:100px; height:100px; border-radius:50%; object-fit:cover; flex-shrink:0;">
-            {% else %}
-                <div style="width:100px; height:100px; border-radius:50%; background: var(--color-bg); display:flex; align-items:center; justify-content:center; font-size:32px; color: var(--color-text-muted); flex-shrink:0;">
-                    {{ member.user.get_full_name|default:member.user.username|first }}
-                </div>
-            {% endif %}
-
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-3); flex:1;">
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted);">نام و نام‌خانوادگی</span>
-                    <strong>{{ member.user.get_full_name|default:"—" }}</strong>
-                </div>
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted);">نام نمایشی</span>
-                    <strong>{{ member.user.nickname|default:"—" }}</strong>
-                </div>
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted);">شماره ملی</span>
-                    <strong>{{ member.user.username }}</strong>
-                </div>
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted);">شماره تماس</span>
-                    <strong>{{ member.mobile_number|default:"—" }}</strong>
-                </div>
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted);">تاریخ تولد</span>
-                    <strong>{{ member.user.date_of_birth|jalali|default:"—" }}</strong>
-                </div>
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted);">سن</span>
-                    <strong>
-                        {% if member.user.exact_age %}
-                            {{ member.user.exact_age.years }} سال و {{ member.user.exact_age.months }} ماه و
-                            {{ member.user.exact_age.days }} روز
-                        {% else %}
-                            —
-                        {% endif %}
-                    </strong>
-                </div>
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted);">شماره عضویت</span>
-                    <strong>{{ member.membership_number|default:"—" }}</strong>
-                </div>
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--space-1);">وضعیت پذیرش</span>
-                    <span class="badge badge-{{ member.approval_status }}">{{ member.get_approval_status_display }}</span>
-                </div>
-                <div>
-                    <span style="display:block; font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--space-1);">وضعیت عضویت</span>
-                    <span class="badge badge-{% if member.status == "active" %}active{% else %}inactive{% endif %}">{{ member.get_status_display }}</span>
-                </div>
+        <div class="member-detail-header__info-grid">
+            <div>
+                <span class="member-detail-header__info-label">نام و نام‌خانوادگی</span>
+                <strong>{{ member.user.get_full_name|default:"—" }}</strong>
+            </div>
+            <div>
+                <span class="member-detail-header__info-label">نام نمایشی</span>
+                <strong>{{ member.user.nickname|default:"—" }}</strong>
+            </div>
+            <div>
+                <span class="member-detail-header__info-label">شماره ملی</span>
+                <strong>{{ member.user.username }}</strong>
+            </div>
+            <div>
+                <span class="member-detail-header__info-label">شماره تماس</span>
+                <strong>{{ member.mobile_number|default:"—" }}</strong>
+            </div>
+            <div>
+                <span class="member-detail-header__info-label">تاریخ تولد</span>
+                <strong>{{ member.user.date_of_birth|jalali|default:"—" }}</strong>
+            </div>
+            <div>
+                <span class="member-detail-header__info-label">سن</span>
+                <strong>
+                    {% if member.user.exact_age %}
+                        {{ member.user.exact_age.years }} سال و {{ member.user.exact_age.months }} ماه و {{ member.user.exact_age.days }} روز
+                    {% else %}—{% endif %}
+                </strong>
+            </div>
+            <div>
+                <span class="member-detail-header__info-label">شماره عضویت</span>
+                <strong>{{ member.membership_number|default:"—" }}</strong>
+            </div>
+            <div>
+                <span class="member-detail-header__info-label">وضعیت پذیرش</span>
+                <span class="badge badge-{{ member.approval_status }}">{{ member.get_approval_status_display }}</span>
+            </div>
+            <div>
+                <span class="member-detail-header__info-label">وضعیت عضویت</span>
+                <span class="badge badge-{% if member.status == "active" %}active{% else %}inactive{% endif %}">{{ member.get_status_display }}</span>
             </div>
         </div>
-        <a href="{% url 'members_portal:membership_management_detail' pk=member.pk %}" class="btn btn-primary">مدیریت
-            وضعیت عضویت</a>
-        <a href="{% url 'members_portal:propose_removal' member_pk=member.pk %}" class="btn btn-danger">پیشنهاد حذف
-            عضو</a>
-        <form method="post" action="{% url 'members_portal:member_reset_password' pk=member.pk %}"
-              class="js-confirm-reset-password" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary">ریست رمز عبور</button>
-        </form>
     </div>
 
-
-    <div class="card">
-        <h2 class="card__title">حق‌های عضویت</h2>
-        <a href="{% url 'members_fees:create' member_pk=member.pk %}" class="btn btn-primary btn-sm">+ ثبت حق عضویت
-            جدید</a>
-        <div class="table-wrapper" style="margin-top: var(--space-3);">
-            <table class="data-table">
-                <tr>
-                    <th>مبلغ</th>
-                    <th>سررسید</th>
-                    <th>وضعیت پرداخت</th>
-                    <th></th>
-                </tr>
-                {% for fee in fees %}
-                    <tr>
-                        <td>{{ fee.amount }}</td>
-                        <td>{{ fee.due_date|jalali }}</td>
-                        <td><span
-                                class="badge badge-{% if fee.payment_status == "paid" %}active{% else %}inactive{% endif %}">{{ fee.get_payment_status_display }}</span>
-                        </td>
-                        <td>
-                            {% if fee.payment_status == "unpaid" %}
-                                <a href="{% url 'members_fees:mark_paid' pk=fee.pk %}" class="btn btn-success btn-sm">ثبت
-                                    پرداخت</a>
-                                <form method="post" action="{% url 'members_fees:delete' pk=fee.pk %}"
-                                      style="display:inline;" class="js-confirm-delete-fee">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm">حذف</button>
-                                </form>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="4">{% include "components/empty_state.html" with empty_message="حق عضویتی ثبت نشده است." %}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-    </div>
-    <div class="card">
-        <h2 class="card__title">مدارک ارسال‌شده</h2>
-        <div class="table-wrapper">
-            <table class="data-table">
-                <tr>
-                    <th>مدرک</th>
-                    <th>وضعیت</th>
-                    <th>فایل</th>
-                    <th>عملیات</th>
-                </tr>
-                {% for row in document_rows %}
-                    <tr>
-                        <td><strong>{{ row.label }}</strong></td>
-                        <td>
-                                                <span class="badge" style="background: var(--color-bg);
-                                                        color: {% if row.status == 'missing' %}var(--color-danger){% elif row.status == 'pending' %}#f5a623{% elif row.status == 'rejected' %}#c0392b{% else %}var(--color-success){% endif %};">
-                            {% if row.status == "missing" %}ارسال‌نشده{% elif row.status == "pending" %}در انتظار
-                                بررسی{% elif row.status == "rejected" %}رد شده{% else %}تأییدشده{% endif %}
-                        </span>
-                            {% if row.rejection_reason %}
-                                <p style="color: var(--color-danger); font-size: var(--font-size-sm); margin: var(--space-1) 0 0;">
-                                    دلیل رد: {{ row.rejection_reason }}</p>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% for f in row.files %}
-                                <a href="{{ f.url }}" target="_blank"
-                                   style="display:inline-block; margin-left: var(--space-2);">{{ f.name }}</a>
-                            {% empty %}
-                                <span style="color: var(--color-text-muted);">—</span>
-                            {% endfor %}
-                        </td>
-                        <td>
-                            {% if row.status != "missing" %}
-                                <div style="display:flex; gap: var(--space-2);">
-                                    {% if row.status != "approved" %}
-                                        <form method="post"
-                                              action="{% url 'members_portal:document_approve' pk=member.pk document_key=row.key %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-success btn-sm">تأیید</button>
-                                        </form>
-                                    {% endif %}
-                                    <button type="button" class="btn btn-danger btn-sm js-reject-document"
-                                            data-key="{{ row.key }}">رد
-                                    </button>
-                                </div>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-    </div>
-
-    <form method="post" id="reject-document-form" style="display:none;">
+    <a href="{% url 'members_portal:membership_management_detail' pk=member.pk %}" class="btn btn-primary">مدیریت وضعیت عضویت</a>
+    <a href="{% url 'members_portal:propose_removal' member_pk=member.pk %}" class="btn btn-danger">پیشنهاد حذف عضو</a>
+    <form method="post" action="{% url 'members_portal:member_reset_password' pk=member.pk %}" class="inline-form js-confirm-reset-password">
         {% csrf_token %}
-        <input type="hidden" name="reason" id="reject-reason-input">
+        <button type="submit" class="btn btn-secondary">ریست رمز عبور</button>
     </form>
+</div>
 
-    <div class="card">
-        <h2 class="card__title">نقش‌های فعلی این عضو</h2>
-        <div class="table-wrapper">
-            <table class="data-table">
+<div class="card">
+    <h2 class="card__title">حق‌های عضویت</h2>
+    <a href="{% url 'members_fees:create' member_pk=member.pk %}" class="btn btn-primary btn-sm">+ ثبت حق عضویت جدید</a>
+    <div class="table-wrapper" style="margin-top: var(--space-3);">
+        <table class="data-table">
+            <tr>
+                <th>مبلغ</th><th>سررسید</th><th>وضعیت پرداخت</th><th></th>
+            </tr>
+            {% for fee in fees %}
                 <tr>
-                    <th>نقش</th>
-                    <th>محدوده</th>
-                    <th>وضعیت</th>
-                    <th></th>
+                    <td>{{ fee.amount|comma }} ریال</td>
+                    <td>{{ fee.due_date|jalali }}</td>
+                    <td><span class="badge badge-{% if fee.payment_status == "paid" %}active{% else %}inactive{% endif %}">{{ fee.get_payment_status_display }}</span></td>
+                    <td>
+                        {% if fee.payment_status == "unpaid" %}
+                            <a href="{% url 'members_fees:mark_paid' pk=fee.pk %}" class="btn btn-success btn-sm">ثبت پرداخت</a>
+                            <form method="post" action="{% url 'members_fees:delete' pk=fee.pk %}" class="inline-form js-confirm-delete-fee">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">حذف</button>
+                            </form>
+                        {% endif %}
+                    </td>
                 </tr>
-                {% for assignment in member.user.role_assignments.all %}
-                    {% if assignment.is_active %}
-                        <tr>
-                            <td>{{ assignment.role.name }}</td>
-                            <td>{{ assignment.access_scope }}</td>
-                            <td><span class="badge badge-active">{{ assignment.get_status_display }}</span></td>
-                            <td><a href="{% url 'roles:management_detail' pk=assignment.pk %}"
-                                   class="btn btn-warning btn-sm">مدیریت</a></td>
-                        </tr>
-                    {% endif %}
-                {% empty %}
-                    <tr>
-                        <td colspan="4">{% include "components/empty_state.html" with empty_message="نقش فعالی ثبت نشده است." %}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
+            {% empty %}
+                <tr><td colspan="4">{% include "components/empty_state.html" with empty_message="حق عضویتی ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
     </div>
+</div>
 
-    <div class="card">
-        <h2 class="card__title">تاریخچه‌ی عضویت</h2>
-        <div class="table-wrapper">
-            <table class="data-table">
+<div class="card">
+    <h2 class="card__title">مدارک ارسال‌شده</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr>
+                <th>مدرک</th><th>وضعیت</th><th>فایل</th><th>عملیات</th>
+            </tr>
+            {% for row in document_rows %}
                 <tr>
-                    <th>از تاریخ</th>
-                    <th>تا تاریخ</th>
-                    <th>وضعیت</th>
+                    <td><strong>{{ row.label }}</strong></td>
+                    <td>
+                        <span class="badge badge-{{ row.status }}">
+                            {% if row.status == "missing" %}ارسال‌نشده{% elif row.status == "pending" %}در انتظار بررسی{% elif row.status == "rejected" %}رد شده{% else %}تأییدشده{% endif %}
+                        </span>
+                        {% if row.rejection_reason %}
+                            <p class="doc-status-reason">دلیل رد: {{ row.rejection_reason }}</p>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for f in row.files %}
+                            <a href="{{ f.url }}" target="_blank" class="doc-file-link">{{ f.name }}</a>
+                        {% empty %}
+                            <span style="color: var(--color-text-muted);">—</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if row.status != "missing" %}
+                            <div class="doc-actions">
+                                {% if row.status != "approved" %}
+                                    <form method="post" action="{% url 'members_portal:document_approve' pk=member.pk document_key=row.key %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success btn-sm">تأیید</button>
+                                    </form>
+                                {% endif %}
+                                <button type="button" class="btn btn-danger btn-sm js-reject-document" data-key="{{ row.key }}">رد</button>
+                            </div>
+                        {% endif %}
+                    </td>
                 </tr>
-                {% for period in membership_periods %}
-                    <tr>
-                        <td>{{ period.start_date|jalali }}</td>
-                        <td>{{ period.end_date|jalali|default:"تاکنون" }}</td>
-                        <td>
-                            <span class="badge badge-{% if period.is_active %}active{% else %}inactive{% endif %}">
-                                {% if period.is_active %}فعال{% else %}پایان‌یافته{% endif %}
-                            </span>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="3">{% include "components/empty_state.html" with empty_message="سابقه‌ای ثبت نشده است." %}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
+            {% endfor %}
+        </table>
     </div>
+</div>
 
-    <div class="card">
-        <h2 class="card__title">تاریخچه‌ی محل خدمت</h2>
-        <div class="table-wrapper">
-            <table class="data-table">
-                <tr>
-                    <th>خانه بهداشت</th>
-                    <th>از تاریخ</th>
-                    <th>تا تاریخ</th>
-                </tr>
-                {% for assignment in employment_history %}
+<form method="post" id="reject-document-form" style="display:none;">
+    {% csrf_token %}
+    <input type="hidden" name="reason" id="reject-reason-input">
+</form>
+
+<div class="card">
+    <h2 class="card__title">نقش‌های فعلی این عضو</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>نقش</th><th>محدوده</th><th>وضعیت</th><th></th></tr>
+            {% for assignment in member.user.role_assignments.all %}
+                {% if assignment.is_active %}
                     <tr>
-                        <td>{{ assignment.health_house.name }}</td>
-                        <td>{{ assignment.start_date|jalali }}</td>
-                        <td>{{ assignment.end_date|jalali|default:"تاکنون" }}</td>
+                        <td>{{ assignment.role.name }}</td>
+                        <td>{{ assignment.access_scope }}</td>
+                        <td><span class="badge badge-active">{{ assignment.get_status_display }}</span></td>
+                        <td><a href="{% url 'roles:management_detail' pk=assignment.pk %}" class="btn btn-warning btn-sm">مدیریت</a></td>
                     </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="3">{% include "components/empty_state.html" with empty_message="سابقه‌ای ثبت نشده است." %}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
+                {% endif %}
+            {% empty %}
+                <tr><td colspan="4">{% include "components/empty_state.html" with empty_message="نقش فعالی ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
     </div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">تاریخچه‌ی عضویت</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>از تاریخ</th><th>تا تاریخ</th><th>وضعیت</th></tr>
+            {% for period in membership_periods %}
+                <tr>
+                    <td>{{ period.start_date|jalali }}</td>
+                    <td>{{ period.end_date|jalali|default:"تاکنون" }}</td>
+                    <td><span class="badge badge-{% if period.is_active %}active{% else %}inactive{% endif %}">{% if period.is_active %}فعال{% else %}پایان‌یافته{% endif %}</span></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="3">{% include "components/empty_state.html" with empty_message="سابقه‌ای ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card__title">تاریخچه‌ی محل خدمت</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tr><th>خانه بهداشت</th><th>از تاریخ</th><th>تا تاریخ</th></tr>
+            {% for assignment in employment_history %}
+                <tr>
+                    <td>{{ assignment.health_house.name }}</td>
+                    <td>{{ assignment.start_date|jalali }}</td>
+                    <td>{{ assignment.end_date|jalali|default:"تاکنون" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="3">{% include "components/empty_state.html" with empty_message="سابقه‌ای ثبت نشده است." %}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
 
 {% endblock %}
 {% block extra_js %}
-    <script>
-        document.querySelectorAll(".js-reject-document").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                var reason = prompt("دلیل رد این مدرک را وارد کنید:");
-                if (reason === null || reason.trim() === "") return;
-                var form = document.getElementById("reject-document-form");
-                form.action = "/management/members/{{ member.pk }}/documents/" + btn.dataset.key + "/reject/";
-                document.getElementById("reject-reason-input").value = reason;
-                form.submit();
-            });
+<script>
+    document.querySelectorAll(".js-reject-document").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var reason = prompt("دلیل رد این مدرک را وارد کنید:");
+            if (reason === null || reason.trim() === "") return;
+            var form = document.getElementById("reject-document-form");
+            form.action = "/management/members/{{ member.pk }}/documents/" + btn.dataset.key + "/reject/";
+            document.getElementById("reject-reason-input").value = reason;
+            form.submit();
         });
-    </script>
-    <script>
-        document.querySelectorAll(".js-confirm-delete-fee").forEach(function (form) {
-            form.addEventListener("submit", function (e) {
-                if (!confirm("آیا از حذف این حق عضویت مطمئن هستید؟ این عمل قابل بازگشت نیست.")) {
-                    e.preventDefault();
-                }
-            });
+    });
+</script>
+<script>
+    document.querySelectorAll(".js-confirm-delete-fee").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (!confirm("آیا از حذف این حق عضویت مطمئن هستید؟ این عمل قابل بازگشت نیست.")) {
+                e.preventDefault();
+            }
         });
-        document.querySelectorAll(".js-confirm-reset-password").forEach(function (form) {
-            form.addEventListener("submit", function (e) {
-                if (!confirm("آیا از ریست رمز عبور این عضو (به کد ملی) مطمئن هستید؟")) {
-                    e.preventDefault();
-                }
-            });
+    });
+    document.querySelectorAll(".js-confirm-reset-password").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (!confirm("آیا از ریست رمز عبور این عضو (به کد ملی) مطمئن هستید؟")) {
+                e.preventDefault();
+            }
         });
-    </script>
+    });
+</script>
 {% endblock %}

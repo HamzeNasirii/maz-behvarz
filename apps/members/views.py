@@ -606,7 +606,7 @@ def member_document_reject_view(request, pk, document_key):
 
 @login_required
 def member_detail_view(request, pk):
-    from .services import get_document_review_rows
+    from .services import DOCUMENT_CHECK_MAP
 
     member = get_object_or_404(Member, pk=pk)
     if not _can_access_member(request.user, member):
@@ -618,7 +618,39 @@ def member_detail_view(request, pk):
     )
     fees = member.fees.order_by("-due_date")
     status_history = member.status_history.select_related("actor").all()
-    document_rows = get_document_review_rows(member)
+
+    document_rows = []
+    for key, config in DOCUMENT_CHECK_MAP.items():
+        has_file = config["has_file"](member)
+        approved_at = getattr(member, config["approved_field"])
+        rejection_reason = getattr(member, config["rejection_field"])
+
+        if not has_file:
+            status = "missing"
+        elif rejection_reason:
+            status = "rejected"
+        elif approved_at:
+            status = "approved"
+        else:
+            status = "pending"
+
+        if config["is_multi"]:
+            files = [{"url": p.image.url, "name": f"صفحه {i + 1}"} for i, p in enumerate(member.birth_certificate_pages.all())]
+        else:
+            file_field = getattr(member, {
+                "legal_decree": "legal_decree_file",
+                "network_letter": "network_letter_file",
+                "national_id": "national_id_card_file",
+            }[key])
+            files = [{"url": file_field.url, "name": config["label"]}] if has_file else []
+
+        document_rows.append({
+            "key": key,
+            "label": config["label"],
+            "status": status,
+            "files": files,
+            "rejection_reason": rejection_reason,
+        })
 
     from apps.authorization.secure_links import make_ref
 
@@ -631,7 +663,6 @@ def member_detail_view(request, pk):
         "document_rows": document_rows,
         "member_user_ref": make_ref(member.user.pk),
     })
-
 
 @login_required
 def member_documents_view(request):
